@@ -45,9 +45,48 @@
 | 提示点 id | 触发时机 | 文案要点 |
 |---|---|---|
 | hint_dark_stack | 首个含 dark 堆的关（阶段二起） | "角标是张数——翻开前，谁也不知道是什么。" |
-| hint_equip_slot | 首件装备卡入槽 | "装备直接生效，不占行囊；本关结束消失。" |
+| hint_equip_slot | 首件装备卡入槽 | "装备直接生效，不占背包；本关结束消失。" |
 | hint_event_popup | 首张事件牌弹窗 | "选择由你定，后果也是。" |
-| hint_wallet_deposit | 首次胜利结算 | "金币已存入行囊，回营地可以采购补给。" |
-| hint_shop_open | 通过第 20 关（商店开放） | "行商到了！用行囊里的金币换补给。" |
+| hint_wallet_deposit | 首次胜利结算 | "金币已存入背包，回营地可以采购补给。" |
+| hint_shop_open | 通过第 20 关（商店开放） | "行商到了！用背包里的金币换补给。" |
+| hint_carry | 首次进关且背包有道具 | "背包里的道具要在出发前携带，局内才能使用。" |
 | hint_sign_open | 通过第 20 关（签到开放） | "每天来领一份旅途补给。" |
 | hint_multi_stack | 盘面堆数首次 ≥6（阶段三） | "墓室越来越深，选好路线再动手。" |
+
+## 7. 引导步骤配置结构（tutorial_steps）
+
+引导步骤是配置数据（走数据流水线与 LocalizationValidator，§1 原则 2），结构如下：
+
+```ts
+interface TutorialStep {
+  id: string;               // 如 "t1_focus"
+  levelId: number;          // 所属关
+  order: number;            // 步骤序号
+  triggerEvent: string;     // 进入本步的监听事件（如 "state_changed:PlayerTurn"）
+  highlightTarget: string;  // 高亮目标：UIConst 引用或节点路径（如 "SCREEN_BATTLE/stacks[0]/topCard"）
+  textKey: string;          // 提示文案（02_CopyDeck.md key）
+  advanceEvent: string;     // 推进条件事件（如 "stack_updated"）
+  advanceCondition?: string;// 附加条件表达式（如 "combo >= 1"，缺省为事件即推进）
+  allowSkip: boolean;       // 是否可跳过（§4）
+}
+```
+
+第 1 关样例（三步，文件 `assets/resources/data/tutorial/tutorial_steps.json`，含公共字段）：
+
+```json
+{ "id": "tut_level1", "type": "tutorial", "version": 1, "createdAt": "2026-10-29", "updatedAt": "2026-10-29", "author": "design",
+  "steps": [
+    { "id": "t1_focus", "levelId": 1, "order": 1, "triggerEvent": "state_changed:PlayerTurn",
+      "highlightTarget": "SCREEN_BATTLE/stacks/topCard", "textKey": "key:tut_tap_card",
+      "advanceEvent": "card_selected", "allowSkip": true },
+    { "id": "t1_confirm", "levelId": 1, "order": 2, "triggerEvent": "card_selected",
+      "highlightTarget": "SCREEN_BATTLE/stacks/topCard", "textKey": "key:tut_confirm_card",
+      "advanceEvent": "card_resolved", "allowSkip": true },
+    { "id": "t1_resource", "levelId": 1, "order": 3, "triggerEvent": "card_resolved",
+      "highlightTarget": "SCREEN_BATTLE/statusBar", "textKey": "key:tut_watch_resource",
+      "advanceEvent": "stack_updated", "allowSkip": true }
+  ]
+}
+```
+
+推进条件=监听事件不轮询（§2）；文案 key 全部登记 02_CopyDeck.md。

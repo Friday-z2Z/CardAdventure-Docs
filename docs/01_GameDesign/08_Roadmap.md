@@ -19,7 +19,7 @@
 | 效果执行顺序 | ActionQueue priority 批次 | 03_ActionQueue.md 第 4 节 |
 | 道具时机与扣除 | 成功提交后扣除 | 04_Items.md 第 3 节 |
 | 固定 vs 随机关 | 固定教学/首领 + 规则生成常规 | 06_Levels.md 第 4 节 |
-| 永久成长系统 | 需要：图鉴 + 开局构筑 + 微量加成，星屑货币 | 04_Platform/04_MetaProgression.md |
+| 永久成长系统 | 需要：图鉴 + 开局构筑 + 微量加成，钻石货币 | 04_Platform/04_MetaProgression.md |
 | 商业化 | 激励视频为主 + 有限 Banner/插屏；内购待版号；不卖数值 | 04_Platform/01_Monetization.md |
 | 第一阶段范围 | 见下节 | — |
 
@@ -67,7 +67,7 @@
 | 任务 | 状态 |
 |---|---|
 | A1 平衡方案一冻结、数值基线 | ✅ 09_BalanceBaseline.md |
-| A2 事件目录 V1 | ✅ 04_EventCatalog.md（24 事件） |
+| A2 事件目录 V1 | ✅ 04_EventCatalog.md（25 事件） |
 | A3 错误码表 + 文案映射（含平台类） | ✅ 10_CodingStandards.md §3 + 02_CopyDeck.md §4 |
 | A4 关卡生产决策（themeId/重玩/失败保留等） | ✅ 06_Levels.md §3.1 |
 | A5 数据流水线与校验器范围 | ✅ 06_DataBalance.md |

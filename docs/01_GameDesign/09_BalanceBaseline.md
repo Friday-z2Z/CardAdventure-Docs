@@ -78,4 +78,29 @@
 
 1. 调整只改 Balance 表 → 导出 → Validator → 模拟回归（06_DataBalance.md 第 3 节）。
 2. 每次变更记录原因与影响范围。
-3. 观测指标（通关率、剩余资源、道具频率）见 06_Levels.md 第 6 节；出现单一最优策略即触发复审。
+3. 观测指标（通关率、剩余资源、道具频率）见 06_Levels.md 第 6 节；出现单一最优策略即触发复审。**复审触发器**：level_fail.cause 分布异常、boss_phase 卡点、DIFF 预测与实际通关率偏差 >15%（06_Levels.md §3.1.2）、钱包存量增速越阈（16_Shop.md §5）。
+
+## 8. 卡牌威胁值评定表（threat，DIFF C 因子数据源）
+
+> 公式：敌人 threat = ATK + HP×0.25 + DEF×0.5；陷阱按效果定值；恢复/资源/装备为负值（减压）。存 Balance `threat` 字段（06_DataBalance.md §3），随新卡登记追加。Validator 归一化：threat / 10。
+
+| 卡 | threat | 依据 |
+|---|---|---|
+| enemy_rat_01 | 1.5 | ATK1 + HP2×0.25 |
+| enemy_slime_01 | 1.75 | ATK1 + HP3×0.25 |
+| enemy_bat_01 | 2.5 | ATK2 + HP2×0.25 |
+| enemy_goblin_01 | 3.0 | ATK2 + HP4×0.25 |
+| enemy_skeleton_01 | 3.75 | ATK2 + HP5×0.25 + DEF1×0.5 |
+| trap_spikes | 3.0 | 定值伤害 4 |
+| trap_gas | 2.5 | 中毒 2 层持续威胁 |
+| heal_herb | −1.0 | 恢复 6 HP |
+| heal_salve | −1.5 | 恢复 12 HP |
+| cleanse_herb | −0.5 | 解除中毒 |
+| res_gold_pouch | −1.0 | 金币收益 |
+| res_food_cache | −1.0 | 食物收益 |
+| res_treasure | −1.2 | 高额金币 |
+| eq_rusty_sword / eq_leather_armor / eq_wolf_fang | −0.5 | 战力提升减压 |
+| evt_campfire | 0 | 二选一中性 |
+| evt_shrine | 0.5 | 献祭成本 |
+| evt_merchant | 0 | 交易中性 |
+| mech_lever / mech_lock_door / exit_door | 0 | 进度中性 |

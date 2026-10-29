@@ -7,7 +7,7 @@
 | 场景 | 曲目 | 说明 |
 |---|---|---|
 | MainMenu / LevelSelect | bgm_menu | 轻快奇幻，循环 |
-| 普通关卡 | bgm_explore | 中性探索氛围，循环 |
+| 普通关卡（含**准备档口**） | bgm_explore | 中性探索氛围，循环；准备档口沿用本曲不切换 |
 | 首领战 | bgm_boss | 紧张主题，入场切换；多段规则见第 1.1 节 |
 | 通关结算 | bgm_victory | 短乐句，不循环 |
 | 失败结算 | bgm_defeat | 短乐句，不循环 |
@@ -47,6 +47,7 @@
 | sign_claim（签到领取） | sfx_reward.wav |
 | 装备入槽（装备卡翻开） | sfx_equip.wav |
 | 暗牌翻开（dark 堆执行） | sfx_card_flip.wav（与亮牌选择音区分） |
+| 卡牌堆掉落入格（战斗开始） | sfx_stack_drop.wav |
 
 规则：SFX 由 SoundSystem 监听事件播放（04_EventCatalog.md 解耦示例），业务代码不直接调用播放；同一结算批次内同名事件触发做去重合并（≤2 次）。
 

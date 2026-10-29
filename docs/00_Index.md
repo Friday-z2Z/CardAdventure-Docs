@@ -31,9 +31,9 @@
 |---|---|---|
 | 00_Architecture.md | 系统闭环、依赖方向、模块职责、数据流水线、平台接口层 | 7.1～7.3、9.2、9.3、9.6 |
 | 01_GameState.md | GameState 职责、结构、变更规则、快照 | 9.3、9.9 |
-| 02_StateMachine.md | 运行状态机（13 状态六要素）、转移硬规则 | 2.1 程序化 |
+| 02_StateMachine.md | 运行状态机（13 状态行/14 状态，六要素）、转移硬规则 | 2.1 程序化 |
 | 03_ActionQueue.md | 动作队列、EffectDefinition 配置、priority 结算批次 | 3.3、5.2、8.6 |
-| 04_EventCatalog.md | EventBus 规则、25 事件目录 | 7.3 |
+| 04_EventCatalog.md | EventBus 规则、26 事件目录 | 7.3 |
 | 05_Performance.md | 性能预算（冻结）、资源生命周期、对象池 | 第十三章 |
 | 06_DataBalance.md | 配置公共字段、7 验证器、Balance 导出、版本规范 | 6.5、9.6、9.7、14 章 |
 | 09_Workflow.md | 任务流程、Git、代码审查、AI 协作模板 | 第十章 |
@@ -60,9 +60,9 @@
 | 01_Monetization.md | 商业化：激励视频三点位、频控红线、内购预案（需版号） |
 | 02_Leaderboard.md | 排行榜：好友榜（开放数据域）+ 日榜（云开发）、主子域架构与已知坑 |
 | 03_Packaging.md | 分包与远程资源：包体结构、CDN 管线、配置热更、启动时序 |
-| 04_MetaProgression.md | 永久成长：图鉴/开局构筑/微加成三线、星屑货币、平衡约束 |
+| 04_MetaProgression.md | 永久成长：图鉴/开局构筑/微加成三线、钻石货币、平衡约束 |
 | 05_Share.md | 分享裂变：三点位、落地页、微信审核红线 |
-| 06_Analytics.md | 埋点事件字典：公共参数、14 事件、上报规则、难度指标消费 |
+| 06_Analytics.md | 埋点事件字典：公共参数、19 事件、上报规则、难度指标消费 |
 | 07_Ops_Release.md | 运营发布：版本通道、回滚、远程开关、监控告警、存档校验、反馈闭环 |
 
 ## 阅读顺序建议

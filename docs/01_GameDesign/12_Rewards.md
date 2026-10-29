@@ -31,7 +31,7 @@ interface RewardConfig {
 
 1. 奖励永远是**一个 Action**，在 ActionQueue 内执行，不在监听器里直接改资源（04_EventCatalog.md 规则 2）。
 2. **幂等键**：每个发奖 Action 携带 `rewardKey = levelId + levelSeed + turn + 序号`；RewardSystem 维护本局已发集合，重复 key 直接丢弃——覆盖"恢复存档后重复发奖"边界用例（11_Testing.md 用例 17）。
-3. 关卡通关奖励只发一次：以 `level_completed` 事件为准，结算面板确认后才写入存档（SaveSystem），写档失败不重复弹奖（02_StateMachine.md LevelResult 异常处理）。
+3. 关卡通关奖励只发一次：以 `level_completed` 事件为准，结算面板确认后才写入存档（SaveSystem），写档失败不重复弹奖（02_StateMachine.md LevelResult 异常处理）。**幂等豁免**：钻石矿点关（tags 含 `diamond_mine`，04_MetaProgression.md §2）的钻石产出为**故意可刷**——每次通关都发、同次通关只发一次，不走本条首通幂等；受**每日刷矿次数上限**约束（超次零产出，04_MetaProgression.md §2）。
 4. **幂等集合随快照持久化**：RewardSystem 维护的本局已发集合（rewardedKeys）必须纳入 GameState 快照与断点续玩存档——恢复存档时一并恢复，否则"写档失败重试"路径会绕过幂等防线重复发奖（11_Testing.md 用例 17 的实现前提）。
 
 ## 4. 防通胀约束

@@ -11,7 +11,7 @@
 | lv | 当前关卡 id（对局外事件为 0） |
 | seed | 关卡种子 |
 | turn | 当前行动次数 |
-| hp / food / gold / walletGold | 事件瞬间资源快照（walletGold 为跨局货币，经济监控数据源，16_Shop.md §5） |
+| hp / food / gold / walletGold / diamond | 事件瞬间资源快照（walletGold 跨局货币、diamond 长线货币——经济监控数据源，16_Shop.md §5 / 04_MetaProgression.md §2） |
 
 ## 2. 事件字典（V1）
 
@@ -28,6 +28,8 @@
 | shop_buy / shop_refresh | 16_Shop 支付/刷新 | itemId, price | 经济回收率 |
 | sign_open / sign_claim | 17_SignIn 打开/领取 | day | 签到留存与漏斗 |
 | wallet_changed | wallet_gold_changed（结算转存/商店/签到/分享） | delta, reason | 钱包存量曲线（16_Shop.md §5 通胀监控） |
+| diamond_changed | diamond_changed（矿点产出/成就/成长树/背包组合购买） | delta, reason | 钻石经济监控（04_MetaProgression.md §2） |
+| tree_buy / combo_buy | 成长树购买 / 背包组合购买 | key, level | 钻石消费漏斗 |
 | ad_watched | 01_Monetization 点位 | placement, completed | 广告转化率 |
 | share_sent / share_opened | 05_Share | scene | 裂变漏斗 |
 | tutorial_step | 15_Tutorial 步骤推进 | stepId, skipped | 引导流失点 |

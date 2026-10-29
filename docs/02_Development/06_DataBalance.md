@@ -31,7 +31,7 @@
 | CardValidator | 引用的效果/目标/成本定义存在；baseValue 范围合法；tags 有效 |
 | EnemyValidator | HP > 0、攻击 ≥ 0、奖励字段非负；特殊效果可解析 |
 | ItemValidator | 效果定义存在；maxStack ≥ 1；unlockLevel ≤ 500 |
-| LevelValidator | 出口存在；卡牌 ID 有效；道具已解锁或不作隐性必需；通关条件可满足；matrix5 占格/堆数 ≤20；depth 三档归属、浅堆占比 ≥40%、梯度 ≥1.5 且差 ≥3；DIFF 落阶段目标带（06_Levels.md §3.1.2）；evt_merchant 金源可达 |
+| LevelValidator | 出口存在；卡牌 ID 有效；道具已解锁或不作隐性必需；通关条件可满足；matrix5 占格/堆数 ≤20；depth 三档归属、浅堆占比 ≥40%、梯度 ≥1.5 且差 ≥3；DIFF 落阶段目标带（06_Levels.md §3.1.2）；evt_merchant 金源可达；开局构筑白名单不含进度类道具（key 等，04_MetaProgression.md §8） |
 | ConfigValidator | 公共字段齐全；id 唯一；无重复资源引用 |
 | AssetValidator | 配置引用的图片/音频文件存在且命名合规（总规格书 8.8） |
 | LocalizationValidator | 名称、描述字段非空；无未翻译占位符 |
@@ -59,6 +59,7 @@ balance.xlsx（或 balance.ts 表）
   - **difficultyWeights**：DIFF 四因子权重 `{ pile: 0.20, depth: 0.30, reveal: 0.20, cardThreat: 0.30 }` + 阶段 DIFF 目标带 + 首领上浮 +10 + 教学上限 15（06_Levels.md §3.1.2）
   - **threat**：每卡威胁值（敌人 f(ATK,HP)、陷阱定值、恢复/资源为负值），随卡牌登记录入
   - 商店价格与阶段系数（16_Shop.md）；签到奖励表（17_SignIn.md）；钱包经济监控阈值（16_Shop.md §5）
+  - 钻石矿点：矿点产出表（1/2/3/5/8 按阶段）与**每日刷矿上限 `mineDailyLimit`**（基线 10 次/日，04_MetaProgression.md §2）
 - 每次导出自动跑验证器 + 受影响关卡模拟（总规格书 14.3）。
 - 数值修改必须记录变更原因和影响范围（提交信息或变更日志）。
 

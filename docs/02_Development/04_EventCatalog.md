@@ -53,6 +53,7 @@ enemy_died（BattleSystem 发布）
 | level_failed | levelId, cause | 状态系统 | 存档、统计 |
 | reward_granted | rewardId, items | 奖励系统 | UI、存档 |
 | wallet_gold_changed | value, delta, reason | 结算转存 / 商店支付（非局内） | 主界面钱包栏、我的页、商店 |
+| diamond_changed | delta, reason | 矿点产出 / 成就 / 成长树与背包组合购买（非局内） | 主界面钱包栏、图鉴、成长树、背包 |
 | save_written | ok, version | SaveSystem | UI（提示）、错误上报 |
 
 ## 3. 维护要求

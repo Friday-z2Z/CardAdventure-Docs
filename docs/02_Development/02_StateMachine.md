@@ -21,7 +21,7 @@ Boot → Loading → MainMenu → LevelSelect → LevelInit
 | Loading | 显示进度 | 操作 | Boot 完成 / 切换场景 | 必需资源就绪 | 资源加载失败 → 回退占位资源，记录错误 |
 | MainMenu | 点按钮 | 操作卡牌 | Loading 完成 | 进入关卡选择/设置 | — |
 | LevelSelect | 选关、查看存档 | 操作 | MainMenu 点击 | 选中关卡 | 关卡配置缺失 → 置灰该关 |
-| LevelInit | 读配置、生成布局、创建 GameState | 玩家决策 | LevelSelect 选中关卡 / MainMenu 主按钮直达（新玩家→第 1 关；老玩家→断点恢复或下一未通关关，见 03_UI/03_Screens.md 2.1） | 布局与状态就绪 | 配置/种子无效 → 报错回菜单 |
+| LevelInit | 读配置、生成布局、创建 GameState、**准备档口**（盘面不出现；可打开商店/背包、返回主菜单） | 盘面卡牌操作（战斗按钮前不可点卡） | LevelSelect 选中关卡 / MainMenu 主按钮直达（新玩家→第 1 关；老玩家→断点恢复或下一未通关关，见 03_UI/03_Screens.md 2.1） | 玩家点击**战斗按钮**或背包内"出发"（布局就绪后）→ PlayerTurn | 配置/种子无效 → 报错回菜单；档口期切后台：回前台原地继续（无战斗进度）；断网：仅商店/排行榜不可用 |
 | PlayerTurn | 点顶层卡、点道具、查看信息 | 重复点击已锁定卡 | LevelInit 或 CheckResult 通过 | 请求入队成功 | 输入锁：结算中点击排队或忽略并提示 |
 | ItemTargeting | 选目标、取消 | 操作卡牌堆 | 使用 targeted 道具 | 目标合法提交 / 取消 | 目标失效（如敌人已死）→ 提示并回到 PlayerTurn |
 | EventChoice | 选事件选项、确认支付 | 操作卡牌堆 | 事件卡/商店触发弹窗（evt_campfire 二选一、evt_shrine 献祭、evt_merchant 购买等） | 选项校验通过并入队 / 关闭弹窗 | 支付失败（金币/食物不足）→ 错误码提示，留在弹窗 |

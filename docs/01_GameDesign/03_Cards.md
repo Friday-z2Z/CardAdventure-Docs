@@ -45,7 +45,7 @@ type TargetRule =
   | "self"              // 玩家自身
   | "enemy_current"     // 当前交战敌人
   | "enemy_all"         // 场上全部敌人（如有多敌关）
-  | "stack_top:<side>"  // 某一侧卡牌堆顶层（transformStack 类）
+  | "stack_top:<stackId>"  // 指定堆（stackId/cell 定位）顶层（transformStack 类）
   | `flag:${string}`;   // 机关/出口条件标记
 
 interface ActionCostDefinition {
@@ -134,4 +134,4 @@ interface EquipmentDefinition {
 
 ### J. 特殊机制卡
 
-改变堆顺序、复制卡牌、封锁一侧、交换顶层、修改本关规则/消耗。必须经规则引擎处理，禁止任意修改其他系统内部状态。
+改变堆顺序、复制卡牌、封锁单堆、交换顶层、修改本关规则/消耗。必须经规则引擎处理，禁止任意修改其他系统内部状态。

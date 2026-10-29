@@ -42,7 +42,7 @@ type ActionResult =
 
 | 类别 | 错误码 |
 |---|---|
-| 玩法类 | `INVALID_TARGET`、`NOT_ENOUGH_FOOD`、`NOT_ENOUGH_GOLD`、`NOT_ENOUGH_STARDUST`、`ITEM_NOT_FOUND`、`ITEM_COOLDOWN`、`ITEM_TARGET_INVALID`、`CARD_NOT_ACTIONABLE`、`EXIT_CONDITION_UNMET`、`LEVEL_ALREADY_COMPLETED`、`SAVE_DATA_INVALID` |
+| 玩法类 | `INVALID_TARGET`、`NOT_ENOUGH_FOOD`、`NOT_ENOUGH_GOLD`、`NOT_ENOUGH_DIAMOND`、`ITEM_NOT_FOUND`、`ITEM_COOLDOWN`、`ITEM_TARGET_INVALID`、`CARD_NOT_ACTIONABLE`、`EXIT_CONDITION_UNMET`、`LEVEL_ALREADY_COMPLETED`、`SAVE_DATA_INVALID` |
 | 平台/网络类 | `NETWORK_UNAVAILABLE`（无网络）、`CONFIG_UPDATE_FAILED`（配置热更失败，已回退兜底，03_Packaging.md §3）、`CLOUD_SYNC_FAILED`（云开发/日榜提交失败）、`AD_NOT_READY`（广告未填充或拉取失败）、`STORAGE_WRITE_FAILED`（存档写失败，转本地暂存重试） |
 
 登记制度（与事件、文案同等的先登记再编码）：
@@ -55,7 +55,7 @@ UI 按错误码展示统一提示；不能出现点击后没有任何反馈的�
 
 ## 4. 存档规范
 
-存档至少包含：存档版本、当前解锁关卡、已完成关卡、玩家永久成长数据、永久解锁内容、当前挑战状态（若支持断点续玩）、设置选项、钱包金币（walletGold，跨局货币，11_Resources.md §3 金币双层制）、签到数据（signData，阶段二，01_GameDesign/17_SignIn.md）。
+存档至少包含：存档版本、当前解锁关卡、已完成关卡、玩家永久成长数据、永久解锁内容、当前挑战状态（若支持断点续玩）、设置选项、钱包金币（walletGold，跨局货币，11_Resources.md §3 金币双层制）、签到数据（signData，阶段二，01_GameDesign/17_SignIn.md）、矿点每日计数（mineDaily：日期 + 当日已刷次数，04_MetaProgression.md §2）、背包组合（MetaProgression.combos，04_MetaProgression.md §8）。
 
 断点续玩还需保存：当前 HP/Food/Gold、装备与道具、全部卡牌堆（2～20，随关卡布局；matrix5 含占格坐标）、状态效果、当前回合、关卡随机种子、关卡进度标记。
 

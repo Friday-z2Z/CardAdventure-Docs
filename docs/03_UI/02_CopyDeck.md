@@ -52,7 +52,7 @@
 | INVALID_TARGET | 这个目标不能这么用。 |
 | NOT_ENOUGH_FOOD | 食物不足。 |
 | NOT_ENOUGH_GOLD | 金币不够。 |
-| NOT_ENOUGH_STARDUST | 星屑还不够，先去闯几关吧。 |
+| NOT_ENOUGH_DIAMOND | 钻石还不够，先去闯几关吧。 |
 | ITEM_NOT_FOUND | 没有这个道具。 |
 | ITEM_COOLDOWN | 还没准备好，稍等片刻。 |
 | ITEM_TARGET_INVALID | 目标已经失效了。 |
@@ -76,26 +76,54 @@
 | 失败死因（食物） | 肚子空空走了太久。补给好一点，下次会更顺利。 | 同上 |
 | 失败死因（状态） | {状态名}让你撑不住了。下次记得先照顾好自己。 | 同上 |
 | 商店未开放 | 行商还在路上，通过第 20 关后来找他吧。 | 主界面/结算页商店入口置灰点击（16_Shop.md 第 1 节） |
-| 通关金币入账 | 金币 +{n} 已存入行囊。 | 通关结算面板（金币转钱包，11_Resources.md 第 3 节） |
+| 通关金币入账 | 金币 +{n} 已存入背包。 | 通关结算面板（金币转钱包，11_Resources.md 第 3 节） |
 | 刷新货架确认 | 花 {n} 金币换一批货物？ | 商店刷新二次确认（ConfirmPopup） |
-| 我的页统计项 | 通关关数 / 最深关卡 / 星屑 / 图鉴完成度 | 我的页（03_UI/03_Screens.md POPUP_PROFILE） |
+| 我的页统计项 | 通关关数 / 最深关卡 / 钻石 / 图鉴完成度 | 我的页（03_UI/03_Screens.md POPUP_PROFILE） |
 | 签到未开放 | 签到将在通过第 20 关后开启。 | 主界面顶栏签到入口置灰点击（17_SignIn.md） |
 | 签到标题 | 每日签到 | POPUP_SIGN |
 | 签到已领 | 今天已领过啦，明天再来。 | POPUP_SIGN 当日重复点击 |
 | 直达下一关副标题 | 第 {n} 关 · {关卡名} | 主界面主按钮"开始游戏"下方小字 |
 | 重开本关链接 | 重开本关 | 主界面"继续冒险"态次级链接（02_StateMachine.md 规则 9） |
 | 重开本关警告 | 放弃本关当前进度，重新挑战第 {n} 关？ | ConfirmPopup（重开确认） |
-| 保存并退出警告 | 进度已记下行囊，回到营地？ | ConfirmPopup（局内保存退出，02_StateMachine.md 规则 10） |
+| 保存并退出警告 | 进度已记下，回到营地？ | ConfirmPopup（局内保存退出，02_StateMachine.md 规则 10） |
 | 震动开关 | 震动 | 设置弹窗（主菜单/局内） |
 | 结算中提示 | 正在结算，稍等一下。 | Resolving 态点击卡牌（00_UiSpec.md 点击交互细则） |
+
+## 7. 关卡目标与引导文案（key: 前缀引用处）
+
+| key | 文案 | 使用位置 |
+|---|---|---|
+| key:level_0003_objective | 找到出口，离开洞窟。 | level_0003 目标区（06_Levels.md §3.2） |
+| key:tut_tap_card | 点开一张牌，看看是什么。 | 引导第 1 关步骤 1（15_Tutorial.md §7） |
+| key:tut_confirm_card | 再点一次，出发！ | 引导第 1 关步骤 2 |
+| key:tut_watch_resource | 注意资源的变化。 | 引导第 1 关步骤 3 |
+
+## 8. 成长树节点文案（04_MetaProgression.md §8）
+
+| key | 文案 |
+|---|---|
+| tree_start_food_name / _desc | 干粮袋 / 开局食物 +0.5（每级，累计取整） |
+| tree_bag_capacity_name / _desc | 背包扩容 / 解锁额外携带槽位（最多 5 槽，随等级解锁） |
+| tree_preset_name / _desc | 背包组合 / 保存多套开局组合，一键切换 |
+| depart_confirm_button | 出发！ | 准备档口确认按钮（03_UI/03_Screens.md 2.1） |
+| depart_edit_title | 出发准备 | LevelInit 内准备档口标题 |
+| depart_edit_slot_hint | 点槽位更换道具 | 准备档口槽位提示 |
+| tree_hp_up_name / _desc | 强健体魄 / 初始生命上限 +2（每级） |
+| tree_shield_up_name / _desc | 老练防御 / 开局护盾 +1 |
+| tree_gold_up_name / _desc | 盘缠 / 开局金币 +5 |
+| tree_max_hint | 已达最高等级。 |
+| mine_daily_used | 今天矿点的钻石已领完，明天再来。 | 矿点关超次通关结算（04_MetaProgression.md §2） |
+| mine_daily_left | 今日剩余刷矿次数：{n} | 矿点关入口/结算面板 |
 | 通关标题 | 出口的光越来越亮…… | 胜利结算面板 |
 | 商店按钮 | 购买 {价格}／刷新 {价格} | 商店面板（16_Shop.md） |
 | 教学跳过 | 跳过引导 | 引导覆盖层（15_Tutorial.md） |
 | 加载失败回退 | 资源还在路上，稍后再试 | LoadingView（05_Performance.md 规则 3） |
 | 排行榜空数据 | 还没有可展示的排名，先去闯关吧 | 好友榜/日榜空态（02_Leaderboard.md 第 6 节） |
 | 排行榜加载中 | 正在集结旅人的足迹…… | 榜单加载态 |
-| 行囊入口 | 旅人的行囊 | 主菜单（04_MetaProgression.md 第 5 节） |
-| 星屑不足 | 星屑还不够，先去闯几关吧。 | 解锁确认 Modal（错误码 NOT_ENOUGH_STARDUST） |
+| 背包入口 | 背包 | 主菜单独立入口（道具中心，03_UI/03_Screens.md 2.1） |
+| 成长树入口 | 成长树 | 主菜单独立入口（成长中心，03_UI/03_Screens.md 2.1） |
+| 图鉴入口 | 图鉴 | 主菜单独立入口（收集中心） |
+| 钻石不足 | 钻石还不够，先去闯几关吧。 | 解锁确认 Modal（错误码 NOT_ENOUGH_DIAMOND） |
 | 图鉴未解锁 | ？（首次遇见后揭晓） | 图鉴占位 |
 | 复活按钮（看广告） | 看一段影像，从倒下的地方继续 | 失败结算面板（01_Monetization.md 第 2 节） |
 | 复活放弃 | 就此作罢 | 同上，与复活按钮并列 |
