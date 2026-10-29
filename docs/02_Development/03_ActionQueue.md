@@ -18,7 +18,7 @@
   ↓ StateMachine 进入 Resolving
   ↓ ActionQueue 逐条出队：
       执行效果 → GameState 变更 → 发布事件 → 播放对应动画/飘字
-      本条动画完成（或到达 skip 阈值）→ 下一条
+      本条动画完成（或到达 skip 阈值：队列累计演出 > 2500ms 后直接终态，数值见 03_UI/00_UiSpec.md 5.1）→ 下一条
   ↓ 队列清空 → StateMachine 进入 CheckResult
 ```
 

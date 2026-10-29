@@ -11,7 +11,7 @@
 | lv | 当前关卡 id（对局外事件为 0） |
 | seed | 关卡种子 |
 | turn | 当前行动次数 |
-| hp / food / gold | 事件瞬间资源快照 |
+| hp / food / gold / walletGold | 事件瞬间资源快照（walletGold 为跨局货币，经济监控数据源，16_Shop.md §5） |
 
 ## 2. 事件字典（V1）
 
@@ -21,11 +21,13 @@
 | level_start | LevelInit 完成 | stage | 关卡漏斗起点 |
 | level_complete | level_completed | turnsUsed, itemsUsed, hpLeft, foodLeft, goldEarned | 通关率、平均剩余资源 |
 | level_fail | level_failed | cause(enemy/food/status/quit), enemyId | 失败原因分布、放弃率 |
-| card_played | card_resolved | cardId, side | 卡牌选择分布 |
+| card_played | card_resolved | cardId, stackId | 卡牌选择分布 |
 | item_used | item_used | itemId, target | 道具使用频率 |
 | combo_reached | combo_updated | tier | 连击达成分布 |
 | boss_phase | boss_phase_changed | bossId, phase | 首领阶段卡点 |
 | shop_buy / shop_refresh | 16_Shop 支付/刷新 | itemId, price | 经济回收率 |
+| sign_open / sign_claim | 17_SignIn 打开/领取 | day | 签到留存与漏斗 |
+| wallet_changed | wallet_gold_changed（结算转存/商店/签到/分享） | delta, reason | 钱包存量曲线（16_Shop.md §5 通胀监控） |
 | ad_watched | 01_Monetization 点位 | placement, completed | 广告转化率 |
 | share_sent / share_opened | 05_Share | scene | 裂变漏斗 |
 | tutorial_step | 15_Tutorial 步骤推进 | stepId, skipped | 引导流失点 |

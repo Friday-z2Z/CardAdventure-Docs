@@ -10,7 +10,7 @@
 | 资源卡/事件 | 卡牌效果内 resource 类型效果 | EffectResolver priority 30 |
 | 连击达成 | `combo_updated`（tier 变化） | 连击奖励 Action（priority 最低，不再触发连击） |
 | 关卡通关 | `level_completed` | 结算面板：固定奖励（rewardConfig）+ 表现结算 |
-| 精英/首领 | 同击杀，奖励配置在敌人定义 | 倍率见 13_EliteBoss.md |
+| 精英/首领 | 同击杀，奖励配置在敌人定义 | 倍率见 14_EliteBoss.md |
 | 永久成长加成 | 任意发奖动作 | 计算在 RewardSystem 内，不改来源配置 |
 
 ## 2. rewardConfig 结构
@@ -32,6 +32,7 @@ interface RewardConfig {
 1. 奖励永远是**一个 Action**，在 ActionQueue 内执行，不在监听器里直接改资源（04_EventCatalog.md 规则 2）。
 2. **幂等键**：每个发奖 Action 携带 `rewardKey = levelId + levelSeed + turn + 序号`；RewardSystem 维护本局已发集合，重复 key 直接丢弃——覆盖"恢复存档后重复发奖"边界用例（11_Testing.md 用例 17）。
 3. 关卡通关奖励只发一次：以 `level_completed` 事件为准，结算面板确认后才写入存档（SaveSystem），写档失败不重复弹奖（02_StateMachine.md LevelResult 异常处理）。
+4. **幂等集合随快照持久化**：RewardSystem 维护的本局已发集合（rewardedKeys）必须纳入 GameState 快照与断点续玩存档——恢复存档时一并恢复，否则"写档失败重试"路径会绕过幂等防线重复发奖（11_Testing.md 用例 17 的实现前提）。
 
 ## 4. 防通胀约束
 

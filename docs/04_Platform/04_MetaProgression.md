@@ -37,7 +37,7 @@ interface MetaProgressData {
 
 ## 5. UI 与文案
 
-- 入口：主菜单"旅人的行囊"（图鉴 + 成长树 + 星屑余额）。
+- 入口：主菜单"**图鉴**"（图鉴收集 + 成长树 + 星屑余额；2026-10 修订：原"旅人的行囊"命名让给道具背包入口 POPUP_BAG，见 03_UI/03_Screens.md）。
 - 文案登记进 CopyDeck 第 5 节同表管理；图鉴复用卡牌说明文案（07_CardCatalog.md）。
 - 解锁确认走 Modal 组件，星屑不足回 `NOT_ENOUGH_GOLD` 类错误码（新增 `NOT_ENOUGH_STARDUST`，登记进 10_CodingStandards.md 第 3 节）。
 

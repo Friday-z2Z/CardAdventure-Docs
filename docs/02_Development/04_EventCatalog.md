@@ -31,9 +31,9 @@ enemy_died（BattleSystem 发布）
 | 事件 | 载荷 | 发布者 | 典型监听者 |
 |---|---|---|---|
 | state_changed | from, to | StateMachine | UI（输入锁/界面切换） |
-| card_selected | side, cardId | UI → GameController | 卡牌系统 |
+| card_selected | stackId, cell, cardId | UI → GameController | 卡牌系统 |
 | card_resolved | cardId, result | EffectResolver | UI、连击、统计 |
-| stack_updated | side, remaining, topCard | 卡牌系统 | UI |
+| stack_updated | stackId, cell, remaining, topCard（dark 堆不下发卡面，UI 只渲染剩余张数角标——00_UiSpec.md §3 暗牌规则） | 卡牌系统 | UI |
 | enemy_damaged | enemyId, amount, overkill | 战斗系统 | UI、统计 |
 | enemy_died | enemyId, rewards | 战斗系统 | 奖励、连击、音效、UI、统计 |
 | player_damaged | amount, source | 战斗/状态系统 | UI、统计 |
@@ -52,6 +52,7 @@ enemy_died（BattleSystem 发布）
 | level_completed | levelId, stats | 出口系统 | 奖励、存档、统计 |
 | level_failed | levelId, cause | 状态系统 | 存档、统计 |
 | reward_granted | rewardId, items | 奖励系统 | UI、存档 |
+| wallet_gold_changed | value, delta, reason | 结算转存 / 商店支付（非局内） | 主界面钱包栏、我的页、商店 |
 | save_written | ok, version | SaveSystem | UI（提示）、错误上报 |
 
 ## 3. 维护要求

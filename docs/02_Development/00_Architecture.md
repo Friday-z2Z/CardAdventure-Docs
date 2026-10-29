@@ -93,6 +93,7 @@ JSON 配置文件
 | IPaymentService | 内购/虚拟支付（预留，需版号后启用，01_Monetization.md 第 4 节） |
 | IShareService | 分享、拉新（05_Share.md） |
 | IAudioService | BGM / SFX 播放与音量 |
+| IPlatformService | 震动（vibrate）、剪贴板等杂项平台能力 |
 | IAssetService | 资源加载、分包加载、CDN 资源 |
 
 好处：平台 API 变更时只改一处；测试环境可注入 mock 实现；未来跨平台无需重写业务。
@@ -111,7 +112,8 @@ card-adventure/                  Creator 项目根（Dashboard 打开）
 │   │   │                        effect-resolver、turn-manager、game-result
 │   │   ├── systems/             battle / card / item / resource / status /
 │   │   │                        combo / level / reward / save 九大系统
-│   │   ├── ui/                  components/（组件库）、screens/、dialogs/、animations/
+│   │   ├── ui/                  base/（BaseView/BasePopup/Toast 视图基类，见 03_UI/00_UiSpec.md 4.1）、
+│   │                        components/（组件库）、screens/、dialogs/、animations/
 │   │   └── services/            analytics、audio、asset、storage、leaderboard、
 │   │                            ad、share —— 平台与引擎能力只在这里出现
 │   ├── resources/               动态加载资源（resources.load）

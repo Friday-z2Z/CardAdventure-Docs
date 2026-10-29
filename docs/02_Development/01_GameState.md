@@ -26,8 +26,7 @@ GameState 是**唯一**的游戏状态持有者。
 ```ts
 interface GameState {
   player: PlayerState;        // 见 ../01_GameDesign/02_Player.md
-  leftStack: StackRuntime;
-  rightStack: StackRuntime;
+  stacks: StackRuntime[];     // 2～20 堆（全阶段 matrix5，06_Levels.md §3.1）：每堆含 cell [row,col]、depth、reveal（lit/dark）、剩余卡序列
   levelId: number;
   levelSeed: number;          // 关卡随机种子，存档必须保存
   runFlags: Record<string, boolean | number>;
@@ -35,6 +34,7 @@ interface GameState {
   turn: number;
   combo: number;
   statusEffects: StatusEffectInstance[];
+  equipped: { weapon?: string; armor?: string; trinket?: string };  // 装备槽只存 ID（03_Cards.md D 节），派生属性重算
 }
 ```
 
@@ -49,6 +49,6 @@ interface GameState {
 
 ## 4. 快照与序列化
 
-- 快照必须完整到可重建整局：`levelSeed + 玩家状态 + 双方卡牌堆 + 状态效果 + runFlags + killedEnemyIds + turn/combo`。
+- 快照必须完整到可重建整局：`levelSeed + 玩家状态 + 全部卡牌堆（含占格坐标与 lit/dark 状态，暗牌对快照透明）+ 装备槽 ID + 状态效果 + runFlags + killedEnemyIds + turn/combo`。
 - 派生属性（装备加成后的攻击力等）不入快照，读取时由装备系统重算（总规格书 3.3-D）。
 - 存档结构、版本迁移与损坏回退策略见 10_CodingStandards.md 第 4 节，SaveSystem 负责执行。

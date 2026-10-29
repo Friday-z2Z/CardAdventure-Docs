@@ -23,6 +23,7 @@
 | 14_EliteBoss.md | 精英构成与机制池、首领多阶段模板、设计红线 | 6.1、6.2 |
 | 15_Tutorial.md | 引导解耦架构、输入拦截、前 5 关脚本、跳过与存档 | 6.2 阶段一 |
 | 16_Shop.md | 商店库存/刷新/支付（阶段二）、只买不卖冻结 | 4.5 |
+| 17_SignIn.md | 签到：7 日循环、断签顺延、奖励表（阶段二开放） | 新增（2026-10） |
 
 ## 02_Development（程序侧）
 
@@ -32,7 +33,7 @@
 | 01_GameState.md | GameState 职责、结构、变更规则、快照 | 9.3、9.9 |
 | 02_StateMachine.md | 运行状态机（13 状态六要素）、转移硬规则 | 2.1 程序化 |
 | 03_ActionQueue.md | 动作队列、EffectDefinition 配置、priority 结算批次 | 3.3、5.2、8.6 |
-| 04_EventCatalog.md | EventBus 规则、23 事件目录 | 7.3 |
+| 04_EventCatalog.md | EventBus 规则、25 事件目录 | 7.3 |
 | 05_Performance.md | 性能预算（冻结）、资源生命周期、对象池 | 第十三章 |
 | 06_DataBalance.md | 配置公共字段、7 验证器、Balance 导出、版本规范 | 6.5、9.6、9.7、14 章 |
 | 09_Workflow.md | 任务流程、Git、代码审查、AI 协作模板 | 第十章 |
@@ -46,9 +47,10 @@
 
 | 文件 | 内容 | 原总规格书出处 |
 |---|---|---|
-| 00_UiSpec.md | 视觉方向、颜色变量、字体、卡牌视觉、组件库、交互、适配、资源命名 | 第八章 |
-| 01_AudioSpec.md | BGM 场景映射、SFX 清单、音量体系、资源要求 | 第八章补全 |
+| 00_UiSpec.md | 视觉方向、颜色变量、字体、卡牌视觉、组件库、视图基类与界面层级（4.1）、动效与输入数值（5.1）、适配、资源命名 | 第八章 |
+| 01_AudioSpec.md | BGM 场景映射、Boss 多段 BGM 规则（1.1）、SFX 清单与并发策略（2.1）、音量体系、资源要求 | 第八章补全 |
 | 02_CopyDeck.md | 游戏内文案总表：道具/状态/稀有度/错误码/系统提示的全部玩家可见文案 | 第八章补全 |
+| 03_Screens.md | 界面清单与导航图、事件订阅/请求映射、UI 常量登记表（UIConst） | 新增（开工前补登） |
 
 ## 04_Platform（平台与运营）
 
@@ -66,5 +68,5 @@
 ## 阅读顺序建议
 
 - 策划：00 → 01 → 09 → 03/04/05/10/11/12/13 → 14/15/16 → 06/07 → 08_Roadmap → 04_Platform/01、04、05
-- 程序：00_Architecture → 01_GameState → 02/03/04 → 06_DataBalance → 10 → 11 → 09_Workflow → 04_Platform/02、03、06、07
+- 程序：00_Architecture → 01_GameState → 02/03/04 → 06_DataBalance → 10 → 11 → 09_Workflow → 03_UI/03_Screens → 04_Platform/02、03、06、07
 - 美术：03_UI/00_UiSpec + 01_AudioSpec + 02_CopyDeck → 01_GameDesign/03、07（卡牌内容）

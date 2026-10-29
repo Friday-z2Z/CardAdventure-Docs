@@ -9,7 +9,7 @@
 | HP | 当前生命值 | 判断生存和失败 | = MaxHP |
 | MaxHP | 最大生命值 | 限制恢复上限 | 30 |
 | Food | 食物资源 | 探索消耗与续航 | 10 |
-| Gold | 金币 | 购买、奖励及交易 | 0 |
+| Gold | 金币（**局内临时资源**，双层制见 11_Resources.md §3：胜利全额转存 walletGold / 失败没收） | 局内购买、奖励及交易 | 0 |
 | Shield | 护盾值 | 抵消符合规则的伤害 | 0 |
 | Attack | 攻击力 | 战斗伤害 | 1 |
 | Defense | 防御力 | 降低符合规则的伤害 | 0 |
@@ -26,6 +26,7 @@
 
 - `0 ≤ HP ≤ MaxHP`
 - `Food ≥ 0`、`Gold ≥ 0`、`Shield ≥ 0`
+- `ProgressData.walletGold ≥ 0`（跨局货币，对局内只读；胜利转存/失败没收，11_Resources.md §3）
 - `Inventory` 中每项 `quantity > 0`，数量为 0 的道具立即移除
 - 同一状态效果 id 在 `StatusEffects` 中至多一条（叠加走 `stacks`）
 

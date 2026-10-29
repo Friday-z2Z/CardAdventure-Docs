@@ -32,8 +32,8 @@ interface ExitRule {
   └─ 有缺口 → 不通关，Toast 列出缺口（如"还差：钥匙 ×1"），出口卡保持可操作
 ```
 
-- 判定是**只读检查**，不进 Resolving；缺口提示走错误码 `EXIT_CONDITION_UNMET` + 缺口明细。
-- pay 型支付成功后金币扣除走 ActionQueue，与商店共用支付路径（15_Shop.md）。
+- 判定是**只读检查**，不进 Resolving：不消耗食物、不计连击、不触发演出锁（03_Cards.md I 节）；缺口提示走错误码 `EXIT_CONDITION_UNMET` + 缺口明细。
+- pay 型支付成功后金币扣除走 ActionQueue，与商店共用支付路径（16_Shop.md）。
 - 出口不可达 / 出口不存在的关卡配置直接被 LevelValidator 拦截，不进运行时。
 
 ## 3. 击杀记录
