@@ -42,7 +42,7 @@ type ActionResult =
 
 | 类别 | 错误码 |
 |---|---|
-| 玩法类 | `INVALID_TARGET`、`NOT_ENOUGH_FOOD`、`NOT_ENOUGH_GOLD`、`NOT_ENOUGH_DIAMOND`、`ITEM_NOT_FOUND`、`ITEM_COOLDOWN`、`ITEM_TARGET_INVALID`、`CARD_NOT_ACTIONABLE`、`EXIT_CONDITION_UNMET`、`LEVEL_ALREADY_COMPLETED`、`SAVE_DATA_INVALID` |
+| 玩法类 | `INVALID_TARGET`、`NOT_ENOUGH_FOOD`、`NOT_ENOUGH_GOLD`、`NOT_ENOUGH_DIAMOND`、`ITEM_NOT_FOUND`、`ITEM_COOLDOWN`、`ITEM_TARGET_INVALID`、`CARD_NOT_ACTIONABLE`、`INVALID_CARRY_ITEM`（携带白名单外/进度类道具）、`SLOT_DUPLICATED`（组合内重复道具）、`BAG_CAPACITY_EXCEEDED`（超出携带槽位）、`ITEM_STACK_FULL`（仓库堆叠已满，购买被阻止）、`EXIT_CONDITION_UNMET`、`LEVEL_ALREADY_COMPLETED`、`SAVE_DATA_INVALID` |
 | 平台/网络类 | `NETWORK_UNAVAILABLE`（无网络）、`CONFIG_UPDATE_FAILED`（配置热更失败，已回退兜底，03_Packaging.md §3）、`CLOUD_SYNC_FAILED`（云开发/日榜提交失败）、`AD_NOT_READY`（广告未填充或拉取失败）、`STORAGE_WRITE_FAILED`（存档写失败，转本地暂存重试） |
 
 登记制度（与事件、文案同等的先登记再编码）：
@@ -61,10 +61,53 @@ UI 按错误码展示统一提示；不能出现点击后没有任何反馈的�
 
 ```ts
 interface SaveData {
-  version: number;            // 存档结构版本，迁移链依据
+  version: number;            // 存档结构版本，迁移链依据（当前 1）
   updatedAt: number;
-  progress: ProgressData;     // 解锁关卡、已完成关卡、永久成长、永久解锁、断点挑战状态、引导完成标记（tutorialDoneSteps，15_Tutorial.md）、钱包金币（walletGold，跨局）
-  settings: SettingsData;     // 音量、静音、语言、震动开关等用户设置（震动经 IPlatformService，00_Architecture.md 第 5 节）
+  progress: ProgressData;
+  settings: SettingsData;
+}
+
+interface ProgressData {
+  unlockedLevel: number;      // 已解锁的最大关卡 id（1 起）
+  completedLevels: number[];  // 已通关关卡 id
+  deepestStage: number;       // 最深通关阶段 1～5（进度门判定，04_MetaProgression.md §8）
+  walletGold: number;         // 跨局钱包金币（11_Resources.md §3）
+  meta: MetaProgressData;     // diamond / collection / unlocked / combos（04_MetaProgression.md §4）
+  run: RunSnapshot | null;    // 断点续玩快照，null = 无断点
+  claimedAchievements: string[]; // 成就一次性奖励（有界，04_MetaProgression.md §7）；首通幂等由 completedLevels 判定
+  tutorialDoneSteps: string[];// 引导完成标记（15_Tutorial.md §4）
+  firstSeenHints: string[];   // 首见一次性提示 id（15_Tutorial.md §6）
+  signData: { claimedDay: number; lastSignDate: string };  // 阶段二（17_SignIn.md §4）
+  mineDaily: { date: string; used: number };               // 矿点每日计数（04_MetaProgression.md §2）
+  shopDaily: { date: string; freeRefreshUsed: boolean };   // 商店每日免费刷新（16_Shop.md §2）
+  shareDaily: { date: string; rewarded: boolean };         // 分享奖励每日一次（05_Share.md §3）
+}
+
+interface RunSnapshot {       // = GameState 完整快照（01_GameState.md §4），断点续玩与异常回滚共用
+  levelId: number;
+  levelSeed: number;
+  turn: number;
+  combo: number;
+  player: PlayerState;
+  stacks: StackRuntime[];
+  enemies: EnemyRuntime[];
+  currentEnemyId?: string;
+  equipped: { weapon?: string; armor?: string; trinket?: string };
+  statusEffects: StatusEffectInstance[];
+  runFlags: Record<string, boolean | number>;
+  killedEnemyIds: string[];
+  rewardedKeys: string[];     // 本局已发奖励幂等集合，必须随快照落盘（12_Rewards.md §3 第 4 条）
+  actionSeq: number;          // 最近 actionId，恢复后继续自增
+  savedAt: number;
+}
+
+interface SettingsData {
+  bgmVolume: number;          // 0～1，默认 0.8（01_AudioSpec.md §3）
+  sfxVolume: number;          // 0～1，默认 0.9
+  masterVolume: number;       // 0～1，默认 1.0
+  muted: boolean;
+  vibration: boolean;         // 经 IPlatformService 生效
+  language: "zh-CN";          // V1 单语，字段预留（12_Delivery_Risk.md §3.1）
 }
 ```
 
@@ -74,6 +117,8 @@ interface SaveData {
 - 存档损坏时提供安全回退，不能覆盖唯一有效存档。
 - 存档读写一律走 `IStorageService`（00_Architecture.md 第 5 节），不直接调 `wx.*`。
 - 派生属性不入档，读取时重算（03_Cards.md 装备规则）。
+- `unlockedLevel` 是进度唯一真源；`deepestStage` 每次通关时由 `unlockedLevel` 推导写入，禁止独立更新（防两字段漂移）。
+- `claimedAchievements` 只存成就 id（有界，8 条 + 活动）；首通幂等由 `completedLevels` 判定，矿点不记账——避免幂等集合无限增长。
 
 ### 4.1 存储 key 表（新增 key 先登记）
 
@@ -86,8 +131,9 @@ interface SaveData {
 写入策略：
 
 1. **先备份后主写**：每次写档序列为 转存主档→backup 轮换位 → 写主档；两步失败均发 `save_written {ok:false}`，按 STORAGE_WRITE_FAILED 处理（本地暂存 + 重试，02_StateMachine.md LevelResult 行）。
-2. **写入时机**：关卡结算、进关/退出关卡、设置变更、断点续玩快照；同秒内多次变更节流合并（10s 窗口），退出前强制落盘。
+2. **写入时机**：关卡结算、进关/退出关卡、设置变更、断点续玩快照；同秒内多次变更节流合并（10s 窗口），退出前强制落盘。窗口内触发 `onHide`/进程退出时立即强制 flush 并重置窗口，不允许把未落盘变更留在内存。
 3. key 命名一律 `snake_case`、`save_`/`cache_` 前缀区分用途；删除或改名 key 必须同步迁移逻辑。
+4. **备份读取顺序**：主档校验失败 → 取 `save_backup_a` / `save_backup_b` 中 `updatedAt` 较新且校验通过的一份 → 两份都失败才空档启动 + `SAVE_DATA_INVALID`；任何情况下不覆盖仍可读的备份。
 
 迁移规范：
 

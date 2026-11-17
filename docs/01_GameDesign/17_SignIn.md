@@ -34,6 +34,7 @@
 
 - 奖励表走配置 JSON（`assets/resources/data/sign/sign_rewards.json`，公共字段见 06_DataBalance.md 第 1 节），调整不改代码。
 - 发放路径：校验今日未领 → 发钱包金币（`wallet_gold_changed`）与道具（`item_gained` 入 Inventory）→ RewardPopup → 写档；不经 ActionQueue（非局内，同商店口径）。
+- **满栈溢出**：发放的道具若已达 `maxStack`，按道具基价折算为钱包金币（`floor(price × overflowGoldRate)`，系数默认 1.0，Balance 表），发 `wallet_gold_changed` 并在 RewardPopup 标注"背包已满，已折算为金币"（02_CopyDeck.md §5）。
 
 ## 4. 存档与埋点
 

@@ -31,8 +31,8 @@
 | CardValidator | 引用的效果/目标/成本定义存在；baseValue 范围合法；tags 有效 |
 | EnemyValidator | HP > 0、攻击 ≥ 0、奖励字段非负；特殊效果可解析 |
 | ItemValidator | 效果定义存在；maxStack ≥ 1；unlockLevel ≤ 500 |
-| LevelValidator | 出口存在；卡牌 ID 有效；道具已解锁或不作隐性必需；通关条件可满足；matrix5 占格/堆数 ≤20；depth 三档归属、浅堆占比 ≥40%、梯度 ≥1.5 且差 ≥3；DIFF 落阶段目标带（06_Levels.md §3.1.2）；evt_merchant 金源可达；开局构筑白名单不含进度类道具（key 等，04_MetaProgression.md §8） |
-| ConfigValidator | 公共字段齐全；id 唯一；无重复资源引用 |
+| LevelValidator | 出口存在；卡牌 ID 有效；道具已解锁或不作隐性必需；通关条件可满足；matrix5 占格/堆数 ≤20；depth 三档归属、浅堆占比 ≥40%、梯度 ≥1.5 且差 ≥3；`composition` 权重 >0、`fixedCards.index < depth` 且不重复；DIFF 落阶段目标带（06_Levels.md §3.1.2）；evt_merchant 金源可达；开局构筑白名单不含进度类道具（key 等，04_MetaProgression.md §8）；两端模拟（零/满解锁）均可解（06_Levels.md §5.1） |
+| ConfigValidator | 公共字段齐全；id 唯一；无重复资源引用；覆盖未单设验证器的配置（shop_offers / sign_rewards / tutorial_steps / copy），校验引用 id 存在、CopyDeck key 已登记、数值范围合法 |
 | AssetValidator | 配置引用的图片/音频文件存在且命名合规（总规格书 8.8） |
 | LocalizationValidator | 名称、描述字段非空；无未翻译占位符 |
 
@@ -60,12 +60,81 @@ balance.xlsx（或 balance.ts 表）
   - **threat**：每卡威胁值（敌人 f(ATK,HP)、陷阱定值、恢复/资源为负值），随卡牌登记录入
   - 商店价格与阶段系数（16_Shop.md）；签到奖励表（17_SignIn.md）；钱包经济监控阈值（16_Shop.md §5）
   - 钻石矿点：矿点产出表（1/2/3/5/8 按阶段）与**每日刷矿上限 `mineDailyLimit`**（基线 10 次/日，04_MetaProgression.md §2）
+  - **状态效果数值**：poison / burn / weakness / vulnerable / regeneration / exhausted 的每层效果、时长与叠加方式（02_Player.md §2.2）
+  - 装备加成、道具效果数值、敌人数值：随卡/敌人登记逐项录入 Balance
+
+**数值唯一真源**：
+
+- `balance/balance.xlsx` 是唯一可编辑源（sheet：player / costs / enemies / cards / items / status / combo / difficulty / shop / sign / mine / rewards；`threat` 是 enemies 与 cards 的列，不单设 sheet）。
+- `assets/resources/data/**` 的 JSON 是导出产物，**禁止手改**；`docs/` 内的数值表（07_CardCatalog、09_BalanceBaseline、02_Player §2.2）是**只读展示副本**——改值只改 Balance 后重新导出，并同步刷新展示表。
+
+**Balance 工作簿结构（`export:balance` 输入契约）**：
+
+| sheet | 主键 | 关键列（列名 = 代码字段） |
+|---|---|---|
+| player | field | value（maxHp / food / attack / defense / shield / gold） |
+| costs | key | value（foodPerAction / foodEmptyPenalty） |
+| status | id | hpPerStack / healPerTurn / attackDelta / duration / stackMode |
+| enemies | enemyId | hp / attack / defense / rewardGold / rewardFood / threat / elite |
+| cards | cardId | rarity / baseValue / threat / actionCostFood / enabled |
+| items | itemId | rarity / maxStack / cooldown / price / useType / overflowGoldRate |
+| combo | tier | gold / food / itemChance |
+| difficulty | key | pileWeight / depthWeight / revealWeight / threatWeight / bandStage1～5 / bossBonus / teachCap |
+| shop | key | basePrice / stageMultiplier / refreshCosts / rareWeight / dailyFreeRefresh |
+| sign | day | rewardType / rewardId / amount |
+| mine | stage | diamondPerClear / dailyLimit |
+| rewards | key | replayTransferRatio / adDoubleMultiplier / rareChanceCap |
+
+- 列名必须与 TS 字段一致；留空 = 取代码默认值；新增行必须带公共字段（version/updatedAt/author）；导出脚本对未知列报错、对缺列告警。
+
+**npm 脚本契约（B1 验收口径）**：
+
+| 脚本 | 输入 | 输出 / 退出码 |
+|---|---|---|
+| `npm run export:balance` | `balance/balance.xlsx` | 写 `assets/resources/data/{cards,items,enemies,balance}/`；成功后自动跑 validate；失败非 0 退出 |
+| `npm run validate` | `assets/resources/data/**` 与 CopyDeck 导出物 | 逐条 `[Validator] <file>: <message>`，`--json` 出机器可读；全通过 0，否则 1 |
+| `npm run export:copy` | `docs/03_UI/02_CopyDeck.md` | 写 `assets/resources/data/copy/copy_zh-CN.json`（扁平 key→text + 公共字段，见 02_CopyDeck.md §8） |
+| `npm run check:licenses` | `manifest.json` + `licenses.csv` | 每个资源必须有已审计 license 记录；缺失即 1 |
+| `npm test` | `tests/**` | Vitest，Node 环境，不依赖引擎 |
+
 - 每次导出自动跑验证器 + 受影响关卡模拟（总规格书 14.3）。
 - 数值修改必须记录变更原因和影响范围（提交信息或变更日志）。
 
-## 4. 随机数规范（重申）
+## 4. 随机数规范（含子流分割）
 
 所有影响关卡结果的随机必须走统一随机模块（总规格书 9.7）：种子驱动、可固定、可复现、可记录。配置流水线中不产生随机，随机只发生在运行时 Factory 与生成器。
+
+**API（`core/random`，纯 TypeScript，禁 import "cc"）**：
+
+```ts
+type RandomStream = "level" | "reward" | "shop" | "meta";
+function createRandom(seed: number, stream: RandomStream): Random;
+interface Random {
+  next(): number;              // [0,1)
+  int(min: number, max: number): number;   // 闭区间
+  pick<T>(list: readonly T[]): T;
+  weightedPick<T>(list: readonly { item: T; weight: number }[]): T;
+  fork(tag: string): Random;   // 由当前流派生独立子流（新增随机点时用）
+}
+```
+
+**子流登记（V1）**：
+
+| 子流 | 用途 | 种子派生 |
+|---|---|---|
+| level | 堆内抽卡、布局生成 | `hash(levelSeed, "level")` |
+| reward | 击杀/通关/宝箱奖励掷骰 | `hash(levelSeed, "reward")` |
+| shop | 货架生成、每日刷新 | `hash(saveDate + deepestStage, "shop")` |
+| meta | 签到/活动等非对局随机 | `hash(dateString + uid, "meta")` |
+
+规则：
+
+1. **禁止跨流共享序列**：任一系统新增随机调用不得改变其他流的输出；否则"同种子同结果"与逐张复盘失效（06_Levels.md §3.1 复盘三要素）。
+2. 新增随机点必须声明所属 stream 并在此表登记用途；未登记 = 代码审查不通过。
+3. 演出类随机（粒子抖动等）一律不入上述流，不得影响逻辑结果。
+4. **hash 算法固定**：统一 FNV-1a 32bit，输入 `${seed}:${stream}:${salt}`；实现只放 `core/random`，禁止各系统自写（算法不一致会直接破坏跨版本复现）。
+5. **商店种子**：`salt = date|deepestStage|refreshCount`——付费刷新递增 `refreshCount` 即换货架；同日同阶段同次数结果一致。
+6. **meta 流不依赖 uid**（单机无账号）：`salt = date|configVersion`。
 
 ## 5. 工程版本规范
 

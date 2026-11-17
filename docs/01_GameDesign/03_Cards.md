@@ -23,6 +23,7 @@ interface CardDefinition {
   tags: string[];
   targetRule: TargetRule;
   actionCost: ActionCostDefinition;
+  options?: EventOptionDefinition[];  // 仅 type === "event" 使用，≥1 且 id 唯一
   unlockLevel: number;
   enabled: boolean;
 }
@@ -58,7 +59,22 @@ interface ConditionRule {
   minResource?: { food?: number; gold?: number };
   statusAbsent?: string;            // 需要不存在某状态（如非疲劳）
 }
+
+interface EventOptionDefinition {   // 事件卡选项（CardDefinition.options）
+  id: string;                       // 事件内唯一
+  textKey: string;                  // CopyDeck key（02_CopyDeck.md §8）
+  cost?: { food?: number; gold?: number; itemId?: string; quantity?: number };
+  condition?: ConditionRule;        // 不满足 → 选项置灰并提示，不允许静默失败
+  effects: EffectDefinition[];      // 选中后的效果，走 ActionQueue
+  successFlag?: string;             // 结算成功写入的 runFlag（如祭坛/机关联动）
+}
 ```
+
+事件选项约束：
+
+- 提交才生成 `event_option` Action（03_ActionQueue.md §3）；取消不入队、不计连击（05_Combo.md §4）。
+- 支付类选项先校验成本再入队，不足回 `NOT_ENOUGH_GOLD` / `NOT_ENOUGH_FOOD`，留在弹窗。
+- CardValidator 检查：`type === "event"` 时 `options` 非空、id 唯一、`textKey` 已登记、`effects` 可解析（06_DataBalance.md §2）。
 
 `EffectDefinition` 的完整定义见 `../02_Development/03_ActionQueue.md`（含 trigger/priority/cancelable）。
 
@@ -70,14 +86,16 @@ interface ConditionRule {
 
 处理：玩家选卡 → 计算有效伤害 → 存活则反击 → 死亡发放奖励 → 处理死亡/击杀/连击触发 → 检查玩家死亡。
 
-伤害公式（原型）：
+伤害公式（原型，**完整版与落地顺序以 10_Battle.md 第 4 节为权威**，本节只给摘要）：
 
 ```text
-玩家对敌人伤害 = max(1, 玩家攻击力 + 技能加成 - 敌人防御力)
-敌人对玩家伤害 = max(0, 敌人攻击力 - 玩家防御力)
+玩家有效攻击 = max(1, 攻击力(含装备) + 技能加成 - weakness 减攻)
+玩家对敌人伤害 = max(1, 玩家有效攻击 - 敌人防御力) × (受击方 vulnerable ? 1.5 : 1)
+敌人有效攻击 = 敌人攻击力 + 敌人技能加成
+敌人对玩家伤害 = max(0, 敌人有效攻击 - 玩家防御力(含装备))
 ```
 
-护盾优先抵消伤害。同死判定顺序：先处理本次攻击 → 判定敌人死亡 → 已死不反击 → 存活才反击 → 最后统一检查玩家状态（ActionQueue 中由 priority 保证，见 03_ActionQueue.md 第 4 节）。
+护盾优先抵消伤害，落地顺序恒为"先算减免 → 再抵护盾 → 最后扣血"。同死判定顺序：先处理本次攻击 → 判定敌人死亡 → 已死不反击 → 存活才反击 → 最后统一检查玩家状态（ActionQueue 中由 priority 保证，见 03_ActionQueue.md 第 4 节）。
 
 ### B. 资源卡
 
@@ -108,7 +126,7 @@ interface EquipmentDefinition {
 }
 ```
 
-规则：相同槽位只能装一件；替换时先移除旧属性再应用新属性；属性不重复累计；存档只存装备 ID，派生属性由装备系统重算。装备**不入背包**（Inventory 只存道具）——局内临时资源，关末消失（11_Resources.md §3；展示位见 03_UI/03_Screens.md 2.1 装备槽）。
+规则：相同槽位只能装一件；替换时先移除旧属性再应用新属性；属性不重复累计；存档只存装备 ID，派生属性由装备系统重算。**替换入口只有一个**——翻到同槽位新装备卡时自动替换；装备槽点击只弹 Tooltip，不支持主动卸下或空手切换（避免把"换装"变成无成本操作）。装备**不入背包**（Inventory 只存道具）——局内临时资源，关末消失（11_Resources.md §3；展示位见 03_UI/03_Screens.md 2.1 装备槽）。
 
 派生属性公式：`有效攻击 = 基础 Attack + Σ(武器与饰品攻击类加成)`，防御同理；饰品被动（如 eq_wolf_fang 的击杀加金）通过 EffectDefinition 的 `trigger` 字段声明触发点，不改奖励系统代码。战斗中公式的套用位置见 10_Battle.md 第 4 节。
 
@@ -118,7 +136,7 @@ interface EquipmentDefinition {
 
 ### F. 事件卡
 
-神秘商人、宝箱、祭坛、休息点、赌局、随机事件。必须走统一事件处理器；**事件选项由配置定义，不允许在 UI 点击回调中写资源修改逻辑。**选项提交并入队结算：结算成功即有效卡牌操作，计入连击（+1，05_Combo.md 规则）；弹窗内取消不计。
+神秘商人、宝箱、祭坛、休息点、赌局、随机事件。必须走统一事件处理器；**事件选项由配置定义，不允许在 UI 点击回调中写资源修改逻辑。**选项提交并入队结算：结算成功即有效卡牌操作，计入连击（+1，05_Combo.md 规则）；弹窗内取消不计。**取消后事件卡保留在堆顶**（可再次点开），不消耗食物、不入队，也不视为一次操作。
 
 ### G. 陷阱卡
 

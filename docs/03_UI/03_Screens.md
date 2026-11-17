@@ -50,7 +50,7 @@ SCENE_BATTLE（LevelInit → PlayerTurn ⇄ … → LevelResult）
 | LoadingView | state_changed（Boot/Loading 进度） | — |
 | SCREEN_MAIN_MENU | state_changed、save_written、wallet_gold_changed | 转移：继续冒险（恢复快照）/ 开始游戏（直达下一关 LevelInit）/ 选择关卡（LevelSelect）；打开设置 / 排行榜 / 商店 / 背包 / 图鉴 / 我的 / 签到 |
 | SCREEN_LEVEL_SELECT | state_changed | 转移：选中关卡（关卡配置缺失置灰，02_StateMachine.md） |
-| SCREEN_BATTLE | stack_updated、hp/food/gold/shield_changed、status_applied/removed、combo_updated、card_resolved、enemy_damaged/enemy_died、player_damaged/player_died、item_used/item_gained、mechanism_activated、boss_phase_changed、exit_unlocked、level_completed/failed | card_selected；道具使用（targeted → ItemTargeting）；事件选项提交；转移请求 |
+| SCREEN_BATTLE | state_changed（输入锁/界面态切换）、stack_updated、hp/food/gold/shield_changed、status_applied/removed、combo_updated、card_resolved、enemy_damaged/enemy_died、player_damaged/player_died、item_used/item_gained、mechanism_activated、boss_phase_changed、exit_unlocked、level_completed/failed | card_selected；道具使用（targeted → ItemTargeting）；事件选项提交；转移请求 |
 | POPUP_BAG | item_gained、item_used | 道具使用请求 |
 | POPUP_EVENT_CHOICE | state_changed（EventChoice 进入/退出） | 事件选项 + 支付确认（失败留弹窗报错误码） |
 | POPUP_REWARD | reward_granted | —（纯展示） |
@@ -58,7 +58,7 @@ SCENE_BATTLE（LevelInit → PlayerTurn ⇄ … → LevelResult）
 | POPUP_SETTINGS | save_written | 设置变更 → SaveData.settings 持久化 |
 | POPUP_LEADERBOARD | —（主动拉取，主子域 postMessage） | 打开时向子域发 friend/day 请求 |
 | POPUP_SHOP | wallet_gold_changed、item_gained | 购买请求（校验钱包 → 扣款 → 入 Inventory → 写档，16_Shop.md §3）；刷新请求 |
-| POPUP_PROFILE | —（打开时读取本地统计与 MetaProgressData） | 微信头像昵称授权获取（拒绝授权显示默认剪影） |
+| POPUP_PROFILE | —（打开时读取本地统计与 MetaProgressData） | 头像昵称填写能力（用户主动填写；未填写显示默认剪影，不阻断）。头像仅当次会话展示，**不写档**（临时路径重启失效），重启回默认剪影 |
 | 通用弹窗 ×5（Message/Confirm/Loading/Reward/Error） | — | —（由调用方传参驱动） |
 
 通用约定：
@@ -108,7 +108,7 @@ SCENE_BATTLE（LevelInit → PlayerTurn ⇄ … → LevelResult）
 |---|---|
 | 盘面 | **不出现**（留白/遮罩——点击战斗按钮后卡牌堆**掉落入格**，00_UiSpec.md §5.1 掉落动画） |
 | **战斗按钮** | 中间区域**两把交叉短剑**图标——点击后正式开始（商店入口消失/不可用，**卡牌堆掉落入格动画**：单堆 300ms、错峰 60ms、总时长 ≤1s，00_UiSpec.md §5.1 → 牌堆揭示，进 PlayerTurn） |
-| 商店入口 | 准备档口期间**可用**（钱包金币采购，即买即入背包可携带） |
+| 商店入口 | **阶段二起可用**（阶段一置灰并提示未开放，16_Shop.md §1）；钱包金币采购，购入进仓库，携带需在背包编辑态另行放入槽位（16_Shop.md §3） |
 | 背包 | 可打开：组合切换/编辑（两态交互见下）+ 仓库查看；**背包内也有"出发"按钮**（应用组合并开始） |
 
 **背包组合两态交互**（准备档口与主界面一致）：
@@ -151,7 +151,7 @@ SCENE_BATTLE（LevelInit → PlayerTurn ⇄ … → LevelResult）
 | 分区 | 内容 |
 |---|---|
 | 标题区 | 胜利 / 失败（失败含死因文案，02_CopyDeck.md §5） |
-| 收益区 | **金币 → 钱包转存明细**（"金币 +N 已存入背包"）、钻石获得（矿点关每次通关产出 + 成就）、道具掉落列表（icon×数量） |
+| 收益区 | **金币 → 钱包转存明细**（"金币 +N 已存入钱袋"）、钻石获得（矿点关每次通关产出 + 成就）、道具掉落列表（icon×数量） |
 | 统计区 | 击杀数、行动次数（Turn）、用时、剩余 HP/Food |
 | 按钮组 | 下一关（主按钮）/ 重试 / 回菜单 / 广告复活（每关 1 次，不可用置灰）——**不含商店与背包入口**（采购与组合准备移至下一关的"准备档口"，03_UI/03_Screens.md 2.1 准备档口） |
 | 幂等 | 收益确认后一次性写档，重复打开不重发（12_Rewards.md §3）；金币转钱包发 wallet_gold_changed |

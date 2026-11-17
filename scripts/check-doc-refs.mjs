@@ -1,0 +1,246 @@
+#!/usr/bin/env node
+/**
+ * 文档交叉引用校验（对应里程碑 A7）
+ *
+ * 检查项：
+ *   1. 文件引用可达：正文里提到的 xx_NN_*.md 是否存在
+ *   2. 章节引用可达：`xx_y.md §3.1` / `xx_y.md 第 3 节` 指向的标题是否存在
+ *   3. 标题编号：`## N.` 单调递增无重复；`### N.M` 的父节 `## N` 存在
+ *   4. 表格列数：表头与每行单元格数一致（`\|` 视为单元格内字符）
+ *   5. 文档计数：README 的"（N 份）"与各目录括注数量与实际文件数一致
+ *
+ * 用法：node scripts/check-doc-refs.mjs
+ * 退出码：0 全通过；1 存在问题
+ * 依赖：无（Node 18+）
+ */
+
+import fs from "node:fs";
+import path from "node:path";
+import { fileURLToPath } from "node:url";
+
+const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
+const DOCS = path.join(ROOT, "docs");
+
+const problems = [];
+const add = (file, line, kind, message) =>
+  problems.push({ file, line, kind, message });
+
+/** 递归收集 markdown 文件 */
+function walk(dir, out = []) {
+  for (const entry of fs.readdirSync(dir, { withFileTypes: true })) {
+    const full = path.join(dir, entry.name);
+    if (entry.isDirectory()) walk(full, out);
+    else if (entry.name.endsWith(".md")) out.push(full);
+  }
+  return out;
+}
+
+/** 粗略剥离围栏代码块，返回 {text, isCode[]} */
+function splitCodeFences(lines) {
+  const isCode = new Array(lines.length).fill(false);
+  let inside = false;
+  lines.forEach((line, i) => {
+    if (/^\s*```/.test(line)) {
+      isCode[i] = inside; // 开/闭围栏本身也视为代码区
+      inside = !inside;
+      return;
+    }
+    isCode[i] = inside;
+  });
+  return isCode;
+}
+
+const HEADING_RE = /^(#{2,4})\s+(.+?)\s*$/;
+const NUM_RE = /^(\d+(?:\.\d+)*)\.?(?=\s|$)/;
+
+function parseDoc(file) {
+  const text = fs.readFileSync(file, "utf8");
+  const lines = text.split(/\r?\n/);
+  const isCode = splitCodeFences(lines);
+  const headings = [];
+  lines.forEach((line, i) => {
+    if (isCode[i]) return;
+    const m = HEADING_RE.exec(line);
+    if (!m) return;
+    const title = m[2].replace(/\s+#+\s*$/, "");
+    const nm = NUM_RE.exec(title);
+    headings.push({
+      line: i + 1,
+      level: m[1].length,
+      num: nm ? nm[1] : null,
+      title,
+    });
+  });
+  const rel = path.relative(ROOT, file).split(path.sep).join("/");
+  return { file, rel, lines, isCode, headings };
+}
+
+/** 拆表格单元格（保留 \| 为普通字符） */
+function splitCells(line) {
+  const s = line.trim();
+  if (!s.startsWith("|")) return null;
+  const cells = [];
+  let cur = "";
+  for (let i = 0; i < s.length; i++) {
+    const ch = s[i];
+    if (ch === "\\" && s[i + 1] === "|") {
+      cur += "\\|";
+      i++;
+      continue;
+    }
+    if (ch === "|") {
+      cells.push(cur);
+      cur = "";
+      continue;
+    }
+    cur += ch;
+  }
+  cells.push(cur);
+  if (cells.length && cells[0].trim() === "") cells.shift();
+  if (cells.length && cells[cells.length - 1].trim() === "") cells.pop();
+  return cells;
+}
+
+const SEPARATOR_RE = /^\s*\|?[\s:|-]*-[\s:|-]*\|?\s*$/;
+
+// ---------- 收集文档 ----------
+if (!fs.existsSync(DOCS)) {
+  console.error(`找不到 docs 目录：${DOCS}`);
+  process.exit(1);
+}
+const docFiles = walk(DOCS);
+const extraFiles = ["README.md", "AGENTS.md"]
+  .map((n) => path.join(ROOT, n))
+  .filter((p) => fs.existsSync(p));
+const allFiles = [...docFiles, ...extraFiles].map(parseDoc);
+
+const byBase = new Map();
+for (const d of allFiles) byBase.set(path.basename(d.file), d);
+
+// ---------- 逐文件检查 ----------
+for (const doc of allFiles) {
+  const { lines, isCode, headings, rel } = doc;
+
+  // 3. 标题编号
+  const h2 = headings.filter((h) => h.level === 2 && h.num && !h.num.includes("."));
+  let prev = null;
+  for (const h of h2) {
+    const n = Number(h.num);
+    if (prev !== null && n <= prev) {
+      add(rel, h.line, "标题编号", `## ${h.num} 出现在 ## ${prev} 之后，应为递增`);
+    }
+    prev = n;
+  }
+  const nums = new Set(headings.map((h) => h.num).filter(Boolean));
+  for (const h of headings) {
+    if (h.level !== 3 || !h.num || !h.num.includes(".")) continue;
+    const parent = h.num.split(".")[0];
+    if (!h2.some((p) => p.num === parent)) {
+      add(rel, h.line, "标题编号", `### ${h.num} 缺少父节 ## ${parent}`);
+    }
+  }
+
+  // 1 & 2. 引用检查
+  lines.forEach((line, i) => {
+    if (isCode[i]) return;
+    const lineNo = i + 1;
+
+    for (const m of line.matchAll(/([0-9]{2}_[A-Za-z0-9_]+\.md)/g)) {
+      if (!byBase.has(m[1])) {
+        add(rel, lineNo, "文件引用", `找不到 ${m[1]}`);
+      }
+    }
+    for (const m of line.matchAll(/(README|AGENTS)\.md/g)) {
+      if (!byBase.has(m[1] + ".md")) {
+        add(rel, lineNo, "文件引用", `找不到 ${m[1]}.md`);
+      }
+    }
+
+    const refPatterns = [
+      /([0-9]{2}_[A-Za-z0-9_]+)(?:\.md)?\s*§\s*(\d+(?:\.\d+)*)/g,
+      /([0-9]{2}_[A-Za-z0-9_]+)(?:\.md)?\s*第\s*(\d+(?:\.\d+)*)\s*节/g,
+    ];
+    for (const re of refPatterns) {
+      for (const m of line.matchAll(re)) {
+        const target = byBase.get(`${m[1]}.md`);
+        if (!target) {
+          add(rel, lineNo, "章节引用", `${m[1]}.md 不存在`);
+          continue;
+        }
+        if (!target.headings.some((h) => h.num === m[2])) {
+          add(rel, lineNo, "章节引用", `${m[1]}.md 中找不到 §${m[2]}`);
+        }
+      }
+    }
+  });
+
+  // 4. 表格列数
+  let tableHeader = null;
+  lines.forEach((line, i) => {
+    if (isCode[i]) return;
+    const cells = splitCells(line);
+    if (!cells) {
+      tableHeader = null;
+      return;
+    }
+    if (tableHeader === null) {
+      const next = lines[i + 1];
+      if (next && SEPARATOR_RE.test(next)) tableHeader = cells.length;
+      return;
+    }
+    if (cells.length !== tableHeader) {
+      add(
+        rel,
+        i + 1,
+        "表格列数",
+        `本行 ${cells.length} 列，表头 ${tableHeader} 列`
+      );
+    }
+  });
+}
+
+// ---------- 5. README 文档计数 ----------
+const readme = byBase.get("README.md");
+if (readme) {
+  const totalLine = readme.lines.findIndex((l) => /^##\s+文档结构（\d+\s*份）/.test(l));
+  if (totalLine >= 0) {
+    const claimed = Number(/（(\d+)\s*份）/.exec(readme.lines[totalLine])[1]);
+    const actual = docFiles.length;
+    if (claimed !== actual) {
+      add("README.md", totalLine + 1, "文档计数", `声明 ${claimed} 份，实际 ${actual} 份`);
+    }
+  }
+  readme.lines.forEach((line, i) => {
+    const m = /[├└]──\s+([0-9]{2}_[A-Za-z0-9_]+)\/\s+\((\d+)\)/.exec(line);
+    if (!m) return;
+    const dir = path.join(DOCS, m[1]);
+    if (!fs.existsSync(dir)) {
+      add("README.md", i + 1, "文档计数", `目录 ${m[1]} 不存在`);
+      return;
+    }
+    const actual = fs.readdirSync(dir).filter((f) => f.endsWith(".md")).length;
+    if (actual !== Number(m[2])) {
+      add("README.md", i + 1, "文档计数", `${m[1]} 声明 ${m[2]} 份，实际 ${actual} 份`);
+    }
+  });
+}
+
+// ---------- 输出 ----------
+if (problems.length === 0) {
+  console.log(`文档引用校验通过：${allFiles.length} 个文件，0 处问题。`);
+  process.exit(0);
+}
+
+const byFile = new Map();
+for (const p of problems) {
+  if (!byFile.has(p.file)) byFile.set(p.file, []);
+  byFile.get(p.file).push(p);
+}
+for (const [file, list] of byFile) {
+  console.log(`\n${file}`);
+  for (const p of list) {
+    console.log(`  ${String(p.line).padStart(4, " ")}  [${p.kind}] ${p.message}`);
+  }
+}
+console.log(`\n共 ${problems.length} 处问题，涉及 ${byFile.size} 个文件。`);
+process.exit(1);

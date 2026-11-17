@@ -61,6 +61,23 @@
 - 图鉴：类型 Tab 与卡池类型一一对应；已收集详情/未收集剪影；局内打开时机矩阵（PlayerTurn 可开，其余置灰）且只显示已收集卡
 - 成长树/钻石：进度门拦截（unlockLevel）；NOT_ENOUGH_DIAMOND 拦截；满级提示；购买写档一致性
 
+**结构定稿新增（第一/二层，来源 01_GameState.md §2、03_ActionQueue.md §3、06_DataBalance.md §4、02_CopyDeck.md §8）**
+
+- 随机子流隔离：同一 levelSeed 下额外插入一次 reward 抽取，level 序列逐张不变；反之亦然
+- `RunSnapshot` 序列化往返：快照 → 存档 → 恢复后逐字段相等，派生属性（含装备）重算一致
+- `Action` 幂等：同一 `actionId` 重复入队/执行被丢弃；`actionSeq` 恢复后继续自增不重号
+- 抽卡可复现：同种子重跑 `level` 流，堆序列与 `fixedCards` 覆盖位置逐张一致
+- CopyDeck 导出覆盖：卡牌/道具/敌人/状态/错误码/objective 的每个 id 都能生成 key 且文案非空
+- 出口判定：`collect` 只统计局内可用道具（仓库锁定件不计）；`pay` 走 `exit_pay` 且失败不扣款；出口卡单击即判定、不耗食物
+- 事件选项取消：事件卡保留堆顶、不耗食物、连击不变、可再次点开
+- 存档备份：主档校验失败时取 `updatedAt` 较新的可用备份，两份都坏才空档启动
+- 矿点计数：重开本关通关 +1，失败/中途退出/放弃不计
+- 连击边界：8 档封顶不再发新档；护盾全吸收、毒 tick、食物惩罚均不中断；陷阱/反击掉血中断
+- 抽卡上限：任一单堆同卡不超过 `max(2, ceil(depth/类型数))`，`fixedCards` 钉位不计入
+- DIFF 口径：D 只取目标路径深度；20 堆 × 20 深但路径浅的关不应被判为高难
+- 满栈：商店返回 `ITEM_STACK_FULL` 且不扣款；签到满栈折算金币并只发一次
+- 分享：同日第二次不发奖励；落地 `levelId > unlockedLevel` 时回落到当前可玩关
+
 **存档与状态机（第二层，来源 02_StateMachine.md 规则 9/10、12_Rewards.md §3、10_CodingStandards.md §4.1）**
 
 - 重开本关：丢弃断点、固定关原种子 / 随机关新种子

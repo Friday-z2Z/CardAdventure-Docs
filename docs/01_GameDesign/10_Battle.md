@@ -13,6 +13,8 @@
 
 - 敌人未死亡时，**敌人卡驻留在原堆顶层，封锁该堆**：该堆后续卡牌不可操作（Disabled 状态，注明"先解决敌人"）；**其余堆不受影响**，可自由操作（matrix5 多堆盘下封锁是局部的，06_Levels.md §3.1）。
 - dark 堆顶牌若驻留敌人：该堆顶牌本就只显示张数角标——封锁时角标转为敌情警示样式（Warning 色，00_UiSpec.md §3），玩家知道"这里锁着一个看不见的敌人"，具体威胁仍隐藏（R 因子定价保留）。
+- **dark 堆翻开即转 lit**：顶牌被翻开后该堆 `reveal` 记为 `lit`，本堆后续按亮堆处理（信息已产生，不再重复隐藏）。
+- **多堆驻留合法**：每个存活敌人都封锁各自所在堆；`currentEnemyId` 只决定目标解析与反击来源，不解除其他堆的封锁（§7）。
 - 驻留敌人**不主动反击**：反击只在玩家攻击它的行动中发生（priority 40）。
 - 封锁产生的压力是策略来源：想拿被封锁堆后面的卡，必须先清掉敌人或用道具。
 
@@ -58,3 +60,11 @@
 | 中毒/灼烧等 tick | 状态系统在 priority 50 结算（02_Player.md） |
 | 击杀奖励 | 奖励系统监听 `enemy_died`（12_Rewards.md） |
 | 驻留封锁的 UI 表现 | CardStack Disabled 状态（03_UI/00_UiSpec.md 卡牌状态表） |
+
+## 7. 多敌同场（阶段三起）
+
+- **生成**：`spawnCard` 把敌人放到指定堆顶层；该敌人 `stackId` 即该堆，`instanceId` 本局唯一（02_Development/01_GameState.md §2）。
+- **当前敌人**：`currentEnemyId` = 最近一次被玩家攻击且仍存活的实例；玩家未攻击时为 undefined。
+- **目标解析**：`enemy_current` 指向 `currentEnemyId`；`enemy_all` = 全场存活敌人（含驻留），按 `stackId` 升序结算；单体道具在 `ItemTargeting` 中选择实例。
+- **驻留**：仍按第 2 节——只封锁自己所在堆，反击只来自被攻击者；`skip_counter` 只作用于 `currentEnemyId`。
+- **全灭判定**：`objective.type === "killAll"` 以"已实例化的存活敌人清空"为准，未生成的潜在敌人不计入。

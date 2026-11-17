@@ -31,8 +31,8 @@ enemy_died（BattleSystem 发布）
 | 事件 | 载荷 | 发布者 | 典型监听者 |
 |---|---|---|---|
 | state_changed | from, to | StateMachine | UI（输入锁/界面切换） |
-| card_selected | stackId, cell, cardId | UI → GameController | 卡牌系统 |
-| card_resolved | cardId, result | EffectResolver | UI、连击、统计 |
+| card_selected | stackId, cell, cardId, reveal | UI → GameController | 卡牌系统、音效（`reveal` 区分 `sfx_card_flip`） |
+| card_resolved | cardId, result, reveal, equipSlot? | EffectResolver | UI、连击、统计、音效（装备卡入槽发 `sfx_equip`） |
 | stack_updated | stackId, cell, remaining, topCard（dark 堆不下发卡面，UI 只渲染剩余张数角标——00_UiSpec.md §3 暗牌规则） | 卡牌系统 | UI |
 | enemy_damaged | enemyId, amount, overkill | 战斗系统 | UI、统计 |
 | enemy_died | enemyId, rewards | 战斗系统 | 奖励、连击、音效、UI、统计 |

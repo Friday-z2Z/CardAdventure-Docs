@@ -81,3 +81,23 @@ interface StatusEffectInstance {
 8. UI 更新。
 
 若某种状态需要特殊时间点，必须通过配置明确指定，不允许在业务代码中散落硬编码。
+
+### 2.1 宿主规则（玩家 / 敌人）
+
+状态效果有两个宿主：玩家 `GameState.statusEffects` 与敌人 `EnemyRuntime.statuses`（02_Development/01_GameState.md §2），**同一 `StatusEffectInstance` 结构、同一 tick 路径**：
+
+- tick 由状态系统在 priority 50 统一结算（03_ActionQueue.md §4），先玩家后敌人，顺序固定。
+- `vulnerable` 属于**受击方**：玩家攻击敌人时读敌人的 vulnerable（×1.5），敌人攻击玩家时读玩家的（10_Battle.md §4）。
+- `shielded` **不写入状态列表**——护盾由 `Shield` 数值体现（11_Resources.md §1），避免与"同 id 至多一条"不变式冗余冲突。
+- 同名效果重复施加：`stacks` 按 §2.2 的叠加方式处理，`duration` 统一取 `max(旧, 新)`（不累加时长，防无限续）。
+
+### 2.2 数值基线（Balance `status` 页维护，待实测校准）
+
+| id | 触发时点 | 每层效果 | 默认时长 | 叠加方式 |
+|---|---|---|---|---|
+| poison | 行动结束（priority 50） | −1 HP / 层 | 3 回合 | add |
+| burn | 行动结束 | −2 HP / 层；治疗不可清除 | 2 回合 | add |
+| weakness | 攻击结算时 | 攻击 −1 | 1 回合 | replace（取高） |
+| vulnerable | 受击结算时 | 受到伤害 ×1.5 | 1 回合 | replace |
+| regeneration | 行动结束 | +2 HP（不超 MaxHP） | 3 回合 | add |
+| exhausted | 成本结算（priority 20） | 本次操作食物成本 +1 | 2 回合 | replace |

@@ -56,8 +56,12 @@
 | ITEM_NOT_FOUND | 没有这个道具。 |
 | ITEM_COOLDOWN | 还没准备好，稍等片刻。 |
 | ITEM_TARGET_INVALID | 目标已经失效了。 |
+| INVALID_CARRY_ITEM | 这个道具不能带进关卡。 |
+| SLOT_DUPLICATED | 同一件道具只能带一份。 |
+| BAG_CAPACITY_EXCEEDED | 携带位不够了，先卸下一件。 |
 | CARD_NOT_ACTIONABLE | 这张卡现在不能用。 |
-| CARD_NOT_ACTIONABLE（驻留封锁变体） | 先解决这只敌人，才能翻看后面的卡。 |
+| ITEM_STACK_FULL | 这件道具带满了，先用掉一件吧。 |
+| CARD_NOT_ACTIONABLE（驻留封锁变体，key: `copy_err_card_not_actionable_locked`） | 先解决这只敌人，才能翻看后面的卡。 |
 | EXIT_CONDITION_UNMET | 还不能离开：{缺口明细列表}。 |
 | LEVEL_ALREADY_COMPLETED | 这一关已经通关啦，去看看后面吧。 |
 | SAVE_DATA_INVALID | 存档出了点问题，已为你回到安全状态。 |
@@ -76,7 +80,7 @@
 | 失败死因（食物） | 肚子空空走了太久。补给好一点，下次会更顺利。 | 同上 |
 | 失败死因（状态） | {状态名}让你撑不住了。下次记得先照顾好自己。 | 同上 |
 | 商店未开放 | 行商还在路上，通过第 20 关后来找他吧。 | 主界面/结算页商店入口置灰点击（16_Shop.md 第 1 节） |
-| 通关金币入账 | 金币 +{n} 已存入背包。 | 通关结算面板（金币转钱包，11_Resources.md 第 3 节） |
+| 通关金币入账 | 金币 +{n} 已存入钱袋。 | 通关结算面板（金币转钱包，11_Resources.md 第 3 节；"钱袋"= walletGold，避免与道具背包混淆） |
 | 刷新货架确认 | 花 {n} 金币换一批货物？ | 商店刷新二次确认（ConfirmPopup） |
 | 我的页统计项 | 通关关数 / 最深关卡 / 钻石 / 图鉴完成度 | 我的页（03_UI/03_Screens.md POPUP_PROFILE） |
 | 签到未开放 | 签到将在通过第 20 关后开启。 | 主界面顶栏签到入口置灰点击（17_SignIn.md） |
@@ -88,8 +92,11 @@
 | 保存并退出警告 | 进度已记下，回到营地？ | ConfirmPopup（局内保存退出，02_StateMachine.md 规则 10） |
 | 震动开关 | 震动 | 设置弹窗（主菜单/局内） |
 | 结算中提示 | 正在结算，稍等一下。 | Resolving 态点击卡牌（00_UiSpec.md 点击交互细则） |
+| 奖励满栈折算 | 背包已满，已折算为金币。 | RewardPopup（签到/奖励发放，17_SignIn.md §3） |
 
-## 7. 关卡目标与引导文案（key: 前缀引用处）
+> 本节 key 统一按 `copy_sys_{语义英文}` 生成（如 `copy_sys_food_zero`、`copy_sys_death_enemy`），语义 slug 与场景列的映射表随导出脚本维护，新增条目须同时补 slug。
+
+## 6. 关卡目标与引导文案（key: 前缀引用处）
 
 | key | 文案 | 使用位置 |
 |---|---|---|
@@ -98,20 +105,20 @@
 | key:tut_confirm_card | 再点一次，出发！ | 引导第 1 关步骤 2 |
 | key:tut_watch_resource | 注意资源的变化。 | 引导第 1 关步骤 3 |
 
-## 8. 成长树节点文案（04_MetaProgression.md §8）
+## 7. 成长树节点文案（04_MetaProgression.md §8）
 
-| key | 文案 |
-|---|---|
-| tree_start_food_name / _desc | 干粮袋 / 开局食物 +0.5（每级，累计取整） |
-| tree_bag_capacity_name / _desc | 背包扩容 / 解锁额外携带槽位（最多 5 槽，随等级解锁） |
-| tree_preset_name / _desc | 背包组合 / 保存多套开局组合，一键切换 |
+| key | 文案 | 使用位置 |
+|---|---|---|
+| tree_start_food_name / _desc | 干粮袋 / 开局食物 +0.5（每级，累计取整） | 成长树节点 |
+| tree_bag_capacity_name / _desc | 背包扩容 / 解锁额外携带槽位（最多 5 槽，随等级解锁） | 成长树节点 |
+| combo_purchase_name / _desc | 背包组合 / 保存多套开局组合，一键切换（第 2～4 套各 80 钻石；非成长树节点，入口在背包组合面板） | 背包组合购买 |
 | depart_confirm_button | 出发！ | 准备档口确认按钮（03_UI/03_Screens.md 2.1） |
 | depart_edit_title | 出发准备 | LevelInit 内准备档口标题 |
 | depart_edit_slot_hint | 点槽位更换道具 | 准备档口槽位提示 |
-| tree_hp_up_name / _desc | 强健体魄 / 初始生命上限 +2（每级） |
-| tree_shield_up_name / _desc | 老练防御 / 开局护盾 +1 |
-| tree_gold_up_name / _desc | 盘缠 / 开局金币 +5 |
-| tree_max_hint | 已达最高等级。 |
+| tree_hp_up_name / _desc | 强健体魄 / 初始生命上限 +1（每级，满 6 级共 +6） | 成长树节点 |
+| tree_shield_up_name / _desc | 老练防御 / 开局护盾 +1 | 成长树节点 |
+| tree_gold_up_name / _desc | 盘缠 / 开局金币 +3，第 2 级再 +2（共 +5） | 成长树节点 |
+| tree_max_hint | 已达最高等级。 | 成长树节点满级 |
 | mine_daily_used | 今天矿点的钻石已领完，明天再来。 | 矿点关超次通关结算（04_MetaProgression.md §2） |
 | mine_daily_left | 今日剩余刷矿次数：{n} | 矿点关入口/结算面板 |
 | 通关标题 | 出口的光越来越亮…… | 胜利结算面板 |
@@ -132,10 +139,13 @@
 | 存档保存提示 | 旅程已记下 | Toast（save_written，07_Ops_Release.md 第 5 节） |
 | 素材致谢入口 | 素材与致谢 | 设置 → 关于（00_Compliance.md 第 4 节署名要求） |
 
-## 6. 文案管理规则
+## 8. 文案管理规则
 
-1. key 命名：`copy_{元素id}_{字段}`（如 `copy_potion_small_desc`、`copy_err_not_enough_gold`）。
-2. 每条文案必须标注展示位置（上表"展示位置"列），新增 UI 必须先在此登记再编码。
-3. 文案不写死在组件里，经 I18n 模块按 key 取值；未命中 key 时开发期显示 key 本身（便于发现漏配），线上显示兜底文案。
-4. 数值不进文案：介绍文案不含具体数字，效果数值由 UI 按配置实时拼接，避免改 Balance 表后文案失真。
-5. 语气基准：奇幻故事书旁白感、短句、对玩家说话，**整体温和宽厚**——不用威胁性、暴力性措辞，不渲染疼痛与损失；失败与警示类文案一律带"鼓励再来"的余味；同类元素句式对齐（道具多为"物品 + 一句用途暗示"）。
+1. **key 生成规则**：`copy_{元素id}_{字段}`（如 `copy_potion_small_desc`、`copy_err_not_enough_gold`）。§1～§4 表已有 id 列（道具 id / 状态 id / 稀有度 / 错误码），**key 由规则自动推导，表内不重复列 key**；§6、§7 已是 key 直接引用，保持 `key:` 前缀写法。
+2. **导出流水线**：`npm run export:copy` 解析本文表格 → 生成 `assets/resources/data/copy/copy_zh-CN.json`（扁平 `{ key: text }`，外层带 06_DataBalance.md §1 公共字段）。**本文是唯一编辑源**，导出物只读、禁止手改。
+3. **取值**：文案不写死在组件里，经 `core/i18n` 模块按 key 取值；未命中 key 时开发期显示 key 本身（便于发现漏配），线上显示兜底文案。
+4. **覆盖校验**：LocalizationValidator 反向核查——卡牌/道具/敌人/状态/错误码/关卡 `objective.displayText` 引用的每个 id 都能生成对应 key 且文案非空；新增配置未登记文案 = 校验失败。
+5. **变体 key**：同一错误码的语境变体必须用独立 key（如驻留封锁变体 `copy_err_card_not_actionable_locked`），禁止同一 key 存两套文案。
+6. 每条文案必须标注展示位置（上表"展示位置"列），新增 UI 必须先在此登记再编码。
+7. 数值不进文案：介绍文案不含具体数字，效果数值由 UI 按配置实时拼接，避免改 Balance 表后文案失真。
+8. 语气基准：奇幻故事书旁白感、短句、对玩家说话，**整体温和宽厚**——不用威胁性、暴力性措辞，不渲染疼痛与损失；失败与警示类文案一律带"鼓励再来"的余味；同类元素句式对齐（道具多为"物品 + 一句用途暗示"）。

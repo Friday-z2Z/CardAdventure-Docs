@@ -107,7 +107,7 @@ card-adventure/                  Creator 项目根（Dashboard 打开）
 │   ├── scenes/                  Boot / MainMenu / Battle（关卡复用 Battle 场景动态生成）
 │   ├── scripts/                 全部 TypeScript 业务代码
 │   │   ├── app/                 bootstrap、app-config、app-lifecycle
-│   │   ├── core/                event-bus、random、logger、error-handler、constants
+│   │   ├── core/                event-bus、random、logger、error-handler、constants、i18n
 │   │   ├── game/                game-controller、game-state、action-resolver、
 │   │   │                        effect-resolver、turn-manager、game-result
 │   │   ├── systems/             battle / card / item / resource / status /
@@ -117,14 +117,17 @@ card-adventure/                  Creator 项目根（Dashboard 打开）
 │   │   └── services/            analytics、audio、asset、storage、leaderboard、
 │   │                            ad、share —— 平台与引擎能力只在这里出现
 │   ├── resources/               动态加载资源（resources.load）
-│   │   └── data/                cards/、items/、enemies/、levels/、balance/、copy/（JSON 配置）
+│   │   └── data/                cards/、items/、enemies/、levels/、balance/、
+│   │                            copy/、shop/、sign/、tutorial/（JSON 配置，均为导出产物）
 │   ├── bundles/                 Asset Bundle：stage2～stage5（对应微信分包）、boss 演出
 │   ├── art/                     images/、icons/、ui/（随包素材，itch.io 加工后入库）
 │   ├── audio/                   bgm/、sfx/
 │   └── fonts/                   云端字体的本地回退字体
 ├── openDataContext/             开放数据域子域（原生 canvas，02_Leaderboard.md）
+├── balance/                     balance.xlsx 唯一数值源（导出产物进 resources/data，06_DataBalance.md §3）
 ├── tests/                       单测/集成（Node 运行，不进 assets）
-├── scripts/                     export:balance / validate / check:licenses
+├── scripts/                     export:balance / export:copy / validate / check:licenses /
+│                                check-doc-refs（文档交叉引用校验）
 └── build/                       构建产物（构建面板输出，指向微信开发者工具）
 ```
 
@@ -146,6 +149,6 @@ card-adventure/                  Creator 项目根（Dashboard 打开）
 | 测试框架 | Vitest | tests/ 第一、二层测试（Node 跑，靠引擎隔离） |
 | Lint / 格式化 | ESLint + Prettier | 禁令自动化；CI 前置 |
 | 微信开发者工具 | 最新稳定版 | 打开 build/ 产物、真机预览、提审 |
-| npm scripts | test / validate / export:balance / check:licenses | 数据流水线与 CI |
+| npm scripts | test / validate / export:balance / export:copy / check:licenses | 数据流水线与 CI（输入输出契约见 06_DataBalance.md §3） |
 
 初始化顺序：主体注册（00_Compliance.md）→ Creator 建工程 → 按第 6 节建目录骨架 → services 接口空实现 → 第一个可构建的微信包 → tests+lint 跑通 → 之后才写业务。

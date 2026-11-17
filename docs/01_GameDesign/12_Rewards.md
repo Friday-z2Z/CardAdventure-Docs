@@ -27,6 +27,15 @@ interface RewardConfig {
 - 区间随机必须走统一随机模块（种子驱动），同种子同结果（06_DataBalance.md 第 4 节）。
 - 道具奖励 chance 与稀有度约束由 ItemValidator / LevelValidator 检查（06_DataBalance.md 第 2 节）。
 
+**倍率与取整口径（V1，避免各系统各自实现）**：
+
+| 项 | 口径 |
+|---|---|
+| gold_magnet（+25%） | 只作用于局内金币来源（击杀/资源卡/连击/通关），每笔**向下取整、最小 +1**；本关内持续 |
+| luck_charm（+50%） | 只作用于**下一次** reward Action（含道具掉落，chance 不变），向下取整最小 +1；消耗即失效 |
+| 广告双倍（结算） | 作用于**转存金额**：`walletGold += floor(gold × 双倍系数)`，系数默认 2；与 gold_magnet 的顺序为"先加成、后双倍"；幂等键加独立后缀 `:ad_double`，重复回调只发一次 |
+| 重玩转存 | `walletGold += floor(gold × replayTransferRatio)`，系数存 Balance，基线 **1.0**；监测触发后下调（16_Shop.md §5），不改规则 |
+
 ## 3. 结算时机与幂等（重复发放防护）
 
 1. 奖励永远是**一个 Action**，在 ActionQueue 内执行，不在监听器里直接改资源（04_EventCatalog.md 规则 2）。

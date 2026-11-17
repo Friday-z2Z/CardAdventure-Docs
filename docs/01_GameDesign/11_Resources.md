@@ -28,7 +28,7 @@
 |---|---|---|
 | 局内金币 | 本关临时资源 | 进关从 LevelStartingState 重建（**不携带**钱包金币入局）；用于 evt_merchant 购买、pay 型出口；失败重试全部重置（没收） |
 | 装备（武器/护甲/饰品） | 局内临时资源 | 翻卡即入装备槽（**不入背包**，03_Cards.md D 节）；属性持续到关末，关末消失；断点存档保存装备 ID |
-| 钱包金币（walletGold） | ProgressData 永久货币 | 胜利结算时**局内金币全额转存钱包**；在主界面商店与准备档口商店购买道具；道具入 Inventory（跨关保留），带入后续局 |
+| 钱包金币（walletGold） | ProgressData 永久货币 | 胜利结算时按 `replayTransferRatio`（Balance，基线 1.0 = 全额）转存钱包；在主界面商店与准备档口商店购买道具；道具入 Inventory（跨关保留），带入后续局 |
 
 - 关卡胜利结束时：HP/Food/Shield 等**其余**临时资源不带入下一关，下一关从 LevelStartingState 重建（关卡可配置携带例外，见 06_Levels.md 第 3 节）。
 - 道具库存（Inventory）、钱包金币与永久成长**跨局保留**，区别于局内临时资源。
@@ -37,6 +37,6 @@
 
 ## 4. UI 呈现约定
 
-- 顶部状态栏固定显示 HP / Food / Gold / Shield 四项（01_CoreLoop.md 第 2 节布局）。
+- 顶部经济组显示**局内 Gold + 钻石（只读）+ 关卡进度 + Turn**；底部生存组显示 **HP / Food / Shield + 装备槽**（布局以 01_CoreLoop.md 第 2 节与 03_UI/03_Screens.md 2.1 为准）。
 - 每次变更必须有 FloatingNumber 或数字滚动反馈，禁止静默变化。
-- Food = 0 时状态栏 Food 图标转 ColorDanger 并常驻提示"探索将损耗生命"。
+- Food = 0 时生存组 Food 图标转 ColorDanger 并常驻提示"探索将损耗生命"。

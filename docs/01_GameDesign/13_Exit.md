@@ -18,15 +18,15 @@ interface ExitRule {
 - `none`：基础关，到达出口即通关（MVP 前期主体）。
 - `flag` 型：需激活的 runFlag（如 door_opened / door_unlocked）。
 - `kill` 型：需击败的指定敌人（enemyId）。
-- `collect` 型：需持有指定物品与数量（itemId / quantity）。
-- `pay` 型：到达出口需支付的金币（gold）。
+- `collect` 型：需持有指定物品与数量（itemId / quantity）。**只查局内可用道具**（已携带 + 本关获得），不查锁定的仓库库存——否则可绕过携带制开门（04_Items.md §3）。
+- `pay` 型：到达出口需支付的金币（gold）。支付动作的 ActionType 固定为 `exit_pay`（03_ActionQueue.md §3），不足回 `NOT_ENOUGH_GOLD` 且不扣款。
 - 多条规则同时配置时为 **AND** 关系（全部满足）。
 - 条件由 LevelValidator 静态核查可满足性（06_DataBalance.md 第 2 节）。
 
 ## 2. 判定流程
 
 ```text
-玩家选中出口卡（出口卡位于堆顶层可操作时）
+玩家单击出口卡（位于堆顶层可操作时；单击即判定，不走两段式）
   ↓ 出口系统读 ExitRule[] 逐条核对 GameState（runFlags / 击杀记录 / Inventory / Gold）
   ├─ 全部满足 → level_completed 事件 → LevelVictory → 结算（12_Rewards.md）
   └─ 有缺口 → 不通关，Toast 列出缺口（如"还差：钥匙 ×1"），出口卡保持可操作

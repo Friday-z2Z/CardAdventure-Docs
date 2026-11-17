@@ -67,12 +67,12 @@
 | 任务 | 状态 |
 |---|---|
 | A1 平衡方案一冻结、数值基线 | ✅ 09_BalanceBaseline.md |
-| A2 事件目录 V1 | ✅ 04_EventCatalog.md（25 事件） |
+| A2 事件目录 V1 | ✅ 04_EventCatalog.md（26 事件） |
 | A3 错误码表 + 文案映射（含平台类） | ✅ 10_CodingStandards.md §3 + 02_CopyDeck.md §4 |
 | A4 关卡生产决策（themeId/重玩/失败保留等） | ✅ 06_Levels.md §3.1 |
 | A5 数据流水线与校验器范围 | ✅ 06_DataBalance.md |
 | A6 界面清单与 UI 常量登记表 | ✅ 03_UI/03_Screens.md |
-| A7 交叉引用一致性核对（编号、计数、引用可达） | ⬜ 收尾任务，勘误后重跑一次核对 |
+| A7 交叉引用一致性核对（编号、计数、引用可达） | ✅ 已脚本化：`node scripts/check-doc-refs.mjs`（2026-11-17） |
 
 通过条件：A1～A7 全勾且文档间引用一致。
 

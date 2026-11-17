@@ -38,6 +38,8 @@
 
 用途列对应 06_Levels.md 第 6 节八项难度指标。
 
+**采集方式**：`app_launch`、`level_start`（LevelInit 完成）、`tutorial_step`、`perf_checkpoint`、`error_caught`、`share_sent` / `share_opened` 为**手动打点**；其余事件由 AnalyticsSystem 监听对应 EventBus 事件自动生成。新增手动点必须在本段登记，避免"以为会自动上报"的漏点。
+
 ## 3. 上报规则
 
 1. **隐私前置**：用户未同意隐私协议前只入本地队列不上报（00_Compliance.md 第 2 节）；同意后补报（带原 ts）。

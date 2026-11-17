@@ -20,6 +20,7 @@
 | 存档相关 | `02_Development/10_CodingStandards.md` 第 4 节 + `01_GameState.md` |
 | 新增事件/错误码/文案 | 先登记：`04_EventCatalog.md` / `10_CodingStandards.md` 第 3 节 / `02_CopyDeck.md` |
 | 平台能力（广告/分享/榜单/存档） | `04_Platform/` 对应文档 + `00_Architecture.md` 第 5 节 |
+| 新增决策/术语/待定项 | `05_Project/00_DecisionLog.md` + `01_Glossary.md` + `02_TbdRegister.md`（先登记再改正文） |
 
 ## 代码放哪（目录速查）
 
@@ -49,7 +50,7 @@
 
 ## 常用命令
 
-`npm test`（单测/集成，Node 不依赖引擎）、`npm run validate`（全部配置验证器）、`npm run export:balance`（Balance 表 → JSON）、`npm run check:licenses`（itch.io 素材许可证核对）
+`npm test`（单测/集成，Node 不依赖引擎）、`npm run validate`（全部配置验证器）、`npm run export:balance`（Balance 表 → JSON）、`npm run check:licenses`（itch.io 素材许可证核对）、`node scripts/check-doc-refs.mjs`（文档交叉引用校验，零依赖可直接跑）
 
 > 注意：工程初始化（`00_Architecture.md` 第 7 节）完成前这些脚本尚不存在；初始化任务按该节清单执行，不要臆造脚本内容。
 

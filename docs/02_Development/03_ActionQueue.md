@@ -29,7 +29,26 @@
 3. 连续快速操作由队列天然串行，杜绝重复结算（总规格书 8.6）。
 4. **食物成本只跟卡牌操作走**：道具使用默认不消耗食物；仅当道具/卡牌配置了 `actionCost` 时才入队成本动作（与 01_CoreLoop.md 第 4 节"有效卡牌操作消耗食物"对齐）。
 
-## 3. 效果定义（Effect Pipeline 配置）
+## 3. 动作与效果定义（Action / Effect Pipeline 配置）
+
+**Action 是入队对象**（此前只定义了效果，缺失一环），由 ActionResolver 生成、ActionQueue 消费：
+
+```ts
+type ActionType = "play_card" | "use_item" | "event_option" | "exit_pay" | "system";
+
+interface Action {
+  actionId: string;              // 本局自增序号（快照内单调），日志与幂等用
+  type: ActionType;
+  sourceId: string;              // cardId / itemId / 事件选项 id / system 子类型
+  target?: TargetRule;
+  effects: EffectDefinition[];   // 入队时由配置展开并冻结，执行期不再读 Registry
+  cost?: ActionCostDefinition;   // 仅卡牌操作携带；道具默认无（第 2 节规则 4）
+  origin: "player" | "system";   // 连击计数与埋点区分（连击奖励类系统动作不计连击）
+}
+```
+
+- 出口判定不生成 Action（只读检查，13_Exit.md §2）；事件选项**提交**才生成 `event_option`，取消不生成（03_Cards.md F 节）。
+- `actionId` 参与 `rewardKey` 的"序号"段（12_Rewards.md §3），快照回滚时一并回滚。
 
 每个效果是可配置的数据对象，不再只是代码分支：
 
@@ -50,7 +69,7 @@ interface EffectDefinition {
 
 规则：
 
-1. 效果永远由 EffectResolver 按 `priority` 排序执行，禁止在卡牌处理器里手写执行顺序。
+1. 效果永远由 EffectResolver 按 `priority` 排序执行，禁止在卡牌处理器里手写执行顺序。同一 priority 内按 `effects` 数组顺序**稳定排序**（不按 actionId），保证配置可读与回放一致；`condition` 与 `target` 在**执行时求值**（不随入队快照），以匹配批次内已提交的状态。
 2. `cancelable: true` 的效果必须先经过免疫/护盾判定（总规格书 3.3-G）。
 3. 连击奖励类效果 `priority` 设为最低，且**连击奖励本身不再触发连击**（总规格书 5.1）。
 4. `trigger` 触发点词汇表（V1 基线，新增须先登记）：`on_card_resolved`（卡牌结算后）、`on_enemy_died`（敌人死亡）、`on_enemy_damaged`、`on_player_damaged`、`on_turn_end`（玩家行动结束）、`on_hp_threshold`（自身 HP 跨阈值，首领/召唤用）。被动效果由 EffectResolver 在对应事件提交后统一触发，不监听 EventBus。
