@@ -18,6 +18,7 @@ interface CardDefinition {
   rarity: CardRarity;          // common | uncommon | rare | epic | legendary
   description: string;
   iconKey: string;
+  enemyId?: string;            // 仅 type === "enemy"：指向 EnemyDefinition.id
   baseValue?: number;
   effects: EffectDefinition[]; // 见 ../02_Development/03_ActionQueue.md
   tags: string[];
@@ -51,7 +52,7 @@ type TargetRule =
 
 interface ActionCostDefinition {
   food: number;         // 本次操作的 Food 消耗，0 = 不消耗
-  exempt: boolean;      // true = 免除本次全局食物消耗（特殊卡）
+  exempt: boolean;      // true = 免除本次全局食物消耗（特殊卡）；同时也免 exhausted 的成本加成
 }
 
 interface ConditionRule {
@@ -76,13 +77,39 @@ interface EventOptionDefinition {   // 事件卡选项（CardDefinition.options�
 - 支付类选项先校验成本再入队，不足回 `NOT_ENOUGH_GOLD` / `NOT_ENOUGH_FOOD`，留在弹窗。
 - CardValidator 检查：`type === "event"` 时 `options` 非空、id 唯一、`textKey` 已登记、`effects` 可解析（06_DataBalance.md §2）。
 
-`EffectDefinition` 的完整定义见 `../02_Development/03_ActionQueue.md`（含 trigger/priority/cancelable）。
+### 敌人定义（EnemyDefinition）
+
+```ts
+interface EnemyDefinition {
+  id: string;                     // enemy_xxx
+  name: string;
+  hp: number;
+  attack: number;
+  defense: number;
+  skillBonus?: number;            // 敌方技能加成，进 10_Battle.md §4 公式，缺省 0
+  elite?: boolean;                // 精英标记（14_EliteBoss.md §1）
+  boss?: boolean;
+  rewardGold?: { min: number; max: number };
+  rewardFood?: number;
+  rewardItem?: { itemId: string; chance: number }[];
+  effects?: EffectDefinition[];   // 特殊机制（再生/荆棘/召唤），用 trigger 声明触发点
+  threat: number;                 // 09_BalanceBaseline.md §8
+  tags: string[];
+  unlockLevel: number;
+  enabled: boolean;
+}
+```
+
+- 敌人是**配置实体**，同时被敌人卡（`type: "enemy"`）与 `spawnCard` 效果引用；公共字段（id/type/version/createdAt/updatedAt/author）见 06_DataBalance.md §1。
+- 数值落在 Balance `enemies` sheet，本结构只描述字段；`threat` 必填，供 DIFF 的 C 因子使用。
+
+`EffectDefinition` 的完整定义见 `../02_Development/03_ActionQueue.md`（含 trigger/priority/cancelable 与参数 schema）。
 
 ## 3. 各类卡处理规则
 
 ### A. 敌人卡
 
-字段：EnemyId、HP、Attack、Defense、SpecialEffects、RewardGold、RewardFood、RewardItem、DifficultyTier。
+字段：卡面只保留 `enemyId`（指向 EnemyDefinition）与名称/稀有度/图标；HP、Attack、Defense、奖励、特殊机制（SpecialEffects）一律读 `EnemyDefinition`，不在卡上重复配置。
 
 处理：玩家选卡 → 计算有效伤害 → 存活则反击 → 死亡发放奖励 → 处理死亡/击杀/连击触发 → 检查玩家死亡。
 

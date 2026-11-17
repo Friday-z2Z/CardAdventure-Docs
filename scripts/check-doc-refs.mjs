@@ -225,6 +225,34 @@ if (readme) {
   });
 }
 
+// ---------- 6. 新文件必须在 Index 登记 ----------
+const indexDoc = byBase.get("00_Index.md");
+if (indexDoc) {
+  const indexText = indexDoc.lines.join("\n");
+  for (const file of docFiles) {
+    const base = path.basename(file);
+    if (base === "00_Index.md") continue;
+    if (!indexText.includes(base)) {
+      add("00_Index.md", 0, "索引登记", `未登记 ${path.relative(DOCS, file).split(path.sep).join("/")}`);
+    }
+  }
+}
+
+// ---------- 7. 决策编号唯一 ----------
+const decisionDoc = byBase.get("00_DecisionLog.md");
+if (decisionDoc) {
+  const seen = new Map();
+  decisionDoc.lines.forEach((line, i) => {
+    const m = /^\|\s*(D-\d{3})\s*\|/.exec(line);
+    if (!m) return;
+    if (seen.has(m[1])) {
+      add(decisionDoc.rel, i + 1, "编号重复", `${m[1]} 已在第 ${seen.get(m[1])} 行出现`);
+    } else {
+      seen.set(m[1], i + 1);
+    }
+  });
+}
+
 // ---------- 输出 ----------
 if (problems.length === 0) {
   console.log(`文档引用校验通过：${allFiles.length} 个文件，0 处问题。`);

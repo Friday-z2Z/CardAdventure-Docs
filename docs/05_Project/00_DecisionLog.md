@@ -112,9 +112,41 @@
 | D-096 | 分享奖励保留，补 `shareDaily`；落地校验 `levelId <= unlockedLevel` | 冻结 | 05_Share.md §2～§3 |
 | D-097 | 复审项"2 堆浅堆比"关闭：取整规则 ⌈N×0.4⌉ 已覆盖，无需额外豁免 | 冻结 | 06_Levels.md §3.1.1 |
 
-## 8. 维护方式
+## 8. 结构补全（2026-11-17 第二轮审计）
 
-1. 新增决策：按域编号顺延（0xx 项目 / 1xx 玩法 / 3xx 经济 / 5xx 工程 / 7xx 文档），先登记后改正文。
+| ID | 决策 | 状态 | 来源 |
+|---|---|---|---|
+| D-098 | `EnemyDefinition` 定稿（含 `skillBonus` / `effects` / `threat` / 奖励字段） | 冻结 | 03_Cards.md §2 |
+| D-099 | `EffectDefinition` 补 `params` 与 `consume`：七类效果的参数 schema 定稿 | 冻结 | 03_ActionQueue.md §3 |
+| D-100 | 减免与取消分层：`blockedByShield`/`ignoreDefense` 管数值，`cancelable` 管免疫/取消 | 冻结 | 03_ActionQueue.md §3 |
+| D-101 | 每关局内金币净收入带基线：8～14 / 15～25 / 25～40 / 40～60 / 60～90（±30%） | 基线 | 09_BalanceBaseline.md §5 |
+| D-102 | `surviveTurns` 撑满 N 回合只解锁出口、不直接通关 | 冻结 | 06_Levels.md §3、13_Exit.md §1 |
+| D-103 | 复活为原地续战、不回滚（致死行动已结算），仅恢复 50% HP 与清 Combo | 冻结 | 01_Monetization.md §5 |
+| D-104 | 资源上限与易伤倍率进 Balance `limits`（99/30/99999/1.5/8），不再散落正文 | 冻结 | 06_DataBalance.md §3、11_Resources.md §1 |
+| D-105 | 分享图 600×480（5:4，24px 安全边，≤200KB）；分享文案 key 登记 CopyDeck §9 | 冻结 | 05_Share.md §4、02_CopyDeck.md §9 |
+| D-106 | 新增 `18_LevelProduction.md`：关卡 JSON 模板、阶段参数包、机制组合矩阵（草案）、20 项检查清单 | 冻结 | 18_LevelProduction.md |
+
+## 9. 第三轮优化（2026-11-17）
+
+| ID | 决策 | 状态 | 来源 |
+|---|---|---|---|
+| D-107 | 敌人卡只保留 `enemyId` 指向，数值与机制全部读 `EnemyDefinition` | 冻结 | 03_Cards.md §2、A 节 |
+| D-108 | 效果支持 `valueRange`（与 `value` 互斥），随机走 `level` 子流 | 冻结 | 03_ActionQueue.md §3 |
+| D-109 | JSON 只写结构与引用，数值由 `export:balance` 注入；缺数值不视为错误 | 冻结 | 06_DataBalance.md §3 |
+| D-110 | 字段更名：`cardPoolIds` → `cardIds`、`composition[].cardPoolId` → `cardId` | 冻结 | 06_Levels.md §3 |
+| D-111 | 8 个 services 接口给出最小方法集（B1 按此出空实现） | 冻结 | 00_Architecture.md §5 |
+| D-112 | `weakness` 只在阶段二起投放（阶段一攻击 1 会被 max(1) 保底吞掉） | 冻结 | 02_Player.md §2.2 |
+| D-113 | Shield 不随回合衰减，关卡结束清零；上限 `limits.shieldCap` | 冻结 | 11_Resources.md §1 |
+| D-114 | 状态 `duration`：施加当回合不递减，priority 50 tick 后 −1 | 冻结 | 02_Player.md §2.1 |
+| D-115 | `exempt` 卡免食物成本，同时免 `exhausted` 加成 | 冻结 | 03_Cards.md §2 |
+| D-116 | `evt_merchant` 打开即触发，交易或关闭后移除，不可重复开启 | 冻结 | 07_CardCatalog.md §6 |
+| D-117 | `difficultyWeights` 的 `pile` 统一为 `stack` | 冻结 | 06_DataBalance.md §3 |
+| D-118 | 结算页不弹 RewardPopup；`POPUP_BAG` 增 `BagMode`；dark 出口卡翻开只读检查后转 lit；`player_damaged.source` 五值枚举 | 冻结 | 03_Screens.md、02_CopyDeck.md §5、13_Exit.md §2、04_EventCatalog.md |
+| D-119 | 广告点位枚举、存档单档 ≤200KB、模拟器加"道具辅助"策略、组件常量表、版本/CI 基线、变更日志 | 冻结 | 01_Monetization.md §5、10_CodingStandards.md §4、06_Levels.md §5.1、03_Screens.md §4、00_Architecture.md §7、05_Project/03_Changelog.md |
+
+## 10. 维护方式
+
+1. 新增决策：取当前最大编号 +1 顺延（按 00x 项目 / 01x～02x 玩法 / 03x 经济 / 05x 工程 / 07x 文档 分段，跨段不保证连续），先登记后改正文。
 2. 推翻决策：原行状态改"已废止（被 D-xxx 取代）"，新行写新结论与原因。
 3. 基线类决策在实测后升级为"冻结"或调整为新基线，并在来源文档同步数值。
 4. 每次登记后运行 `node scripts/check-doc-refs.mjs`，确保引用未断。

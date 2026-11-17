@@ -44,4 +44,5 @@
 
 - 统一走 `IAdService`（00_Architecture.md 第 5 节）：`showRewarded(placement): Promise<{completed:boolean}>`、`showBanner/HideBanner`。
 - 业务只声明**点位 placement 字符串**，广告实现与频控在 service 内，便于切换广告位 id 与 A/B。
-- 复活流程挂接状态机：LevelDefeat → 看广告 → 回 PlayerTurn（满血 50%，Combo 清零，Food 不恢复），全程走 ActionQueue。
+- **点位枚举（登记制）**：`type AdPlacement = "revive" | "double_reward" | "shop_refresh";` 新增点位先登记本节，并同时给出频控规则。
+- 复活流程挂接状态机：LevelDefeat → 看广告 → 回 PlayerTurn，全程走 ActionQueue。语义固定为**原地续战、不回滚**：致死那一次行动已结算完毕（该卡已消耗、敌人保持当前 HP、堆序不变），仅把 HP 置为 `max(1, floor(MaxHP × 0.5))`，Combo 清零，Food/Shield/道具/装备不变；不做"回到死亡前快照"。

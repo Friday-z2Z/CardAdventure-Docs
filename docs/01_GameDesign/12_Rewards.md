@@ -46,5 +46,5 @@ interface RewardConfig {
 ## 4. 防通胀约束
 
 - 全部奖励区间集中于 Balance 表（09_BalanceBaseline.md 第 5 节），禁止散落。
-- 每关金币净收入（奖励 − 消耗）由 LevelValidator 模拟核查不越出该阶段预算带 ±30%。
+- 每关金币净收入（奖励 − 消耗）由 LevelValidator 模拟核查，不超出 09_BalanceBaseline.md §5「每关局内金币净收入带」的 ±30%。
 - 稀有道具掉率之和每关 ≤ 配置上限（LevelValidator 检查）。

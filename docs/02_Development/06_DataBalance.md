@@ -56,7 +56,7 @@ balance.xlsx（或 balance.ts 表）
 - **Balance 字段登记（V1，2026-10 增补）**：
   - 玩家初始属性与全局消耗（09_BalanceBaseline.md §2～3）；连击阈值与奖励（§6）
   - 关卡生成：depth 三档表、堆数配方、浅堆配比下限、梯度规则（06_Levels.md §3.1.1）
-  - **difficultyWeights**：DIFF 四因子权重 `{ pile: 0.20, depth: 0.30, reveal: 0.20, cardThreat: 0.30 }` + 阶段 DIFF 目标带 + 首领上浮 +10 + 教学上限 15（06_Levels.md §3.1.2）
+  - **difficultyWeights**：DIFF 四因子权重 `{ stack: 0.20, depth: 0.30, reveal: 0.20, cardThreat: 0.30 }` + 阶段 DIFF 目标带 + 首领上浮 +10 + 教学上限 15（06_Levels.md §3.1.2）
   - **threat**：每卡威胁值（敌人 f(ATK,HP)、陷阱定值、恢复/资源为负值），随卡牌登记录入
   - 商店价格与阶段系数（16_Shop.md）；签到奖励表（17_SignIn.md）；钱包经济监控阈值（16_Shop.md §5）
   - 钻石矿点：矿点产出表（1/2/3/5/8 按阶段）与**每日刷矿上限 `mineDailyLimit`**（基线 10 次/日，04_MetaProgression.md §2）
@@ -65,8 +65,10 @@ balance.xlsx（或 balance.ts 表）
 
 **数值唯一真源**：
 
-- `balance/balance.xlsx` 是唯一可编辑源（sheet：player / costs / enemies / cards / items / status / combo / difficulty / shop / sign / mine / rewards；`threat` 是 enemies 与 cards 的列，不单设 sheet）。
+- `balance/balance.xlsx` 是唯一可编辑源（sheet：player / costs / limits / enemies / cards / items / status / combo / difficulty / shop / sign / mine / rewards；`threat` 是 enemies 与 cards 的列，不单设 sheet）。
 - `assets/resources/data/**` 的 JSON 是导出产物，**禁止手改**；`docs/` 内的数值表（07_CardCatalog、09_BalanceBaseline、02_Player §2.2）是**只读展示副本**——改值只改 Balance 后重新导出，并同步刷新展示表。
+
+**结构与数值的合并边界**（B1 导出脚本按此实现）：手写 JSON 只写**结构与引用**（`cardIds`、`composition[].cardId`、`effects`、`tags`、`cell` 等），数值字段（hp/attack/defense/baseValue/price/threat/maxStack…）一律由 `export:balance` 注入；模板中数值留空即表示待注入，Validator 不视为错误。
 
 **Balance 工作簿结构（`export:balance` 输入契约）**：
 
@@ -74,12 +76,13 @@ balance.xlsx（或 balance.ts 表）
 |---|---|---|
 | player | field | value（maxHp / food / attack / defense / shield / gold） |
 | costs | key | value（foodPerAction / foodEmptyPenalty） |
+| limits | key | value（foodCap / shieldCap / goldCap / vulnerableMultiplier / comboMaxTier） |
 | status | id | hpPerStack / healPerTurn / attackDelta / duration / stackMode |
 | enemies | enemyId | hp / attack / defense / rewardGold / rewardFood / threat / elite |
 | cards | cardId | rarity / baseValue / threat / actionCostFood / enabled |
 | items | itemId | rarity / maxStack / cooldown / price / useType / overflowGoldRate |
 | combo | tier | gold / food / itemChance |
-| difficulty | key | pileWeight / depthWeight / revealWeight / threatWeight / bandStage1～5 / bossBonus / teachCap |
+| difficulty | key | stackWeight / depthWeight / revealWeight / threatWeight / bandStage1～5 / bossBonus / teachCap |
 | shop | key | basePrice / stageMultiplier / refreshCosts / rareWeight / dailyFreeRefresh |
 | sign | day | rewardType / rewardId / amount |
 | mine | stage | diamondPerClear / dailyLimit |

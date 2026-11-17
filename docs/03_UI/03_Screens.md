@@ -156,6 +156,7 @@ SCENE_BATTLE（LevelInit → PlayerTurn ⇄ … → LevelResult）
 | 按钮组 | 下一关（主按钮）/ 重试 / 回菜单 / 广告复活（每关 1 次，不可用置灰）——**不含商店与背包入口**（采购与组合准备移至下一关的"准备档口"，03_UI/03_Screens.md 2.1 准备档口） |
 | 幂等 | 收益确认后一次性写档，重复打开不重发（12_Rewards.md §3）；金币转钱包发 wallet_gold_changed |
 | 动画 | 分步呈现：转钱包 → 钻石 → 掉落；受 skip 规则约束（00_UiSpec.md §5.1） |
+| 弹窗互斥 | 进入本屏后**不再弹 RewardPopup**——奖励只在结算页分步呈现，避免同一份收益出现两次 |
 
 ## 3. 界面 ↔ 状态机对照
 
@@ -219,6 +220,22 @@ SCENE_BATTLE（LevelInit → PlayerTurn ⇄ … → LevelResult）
 | POPUP_PROFILE | profile | BasePopup（我的：微信头像昵称授权 + 本地统计） |
 | POPUP_CODEX | codex | BasePopup（图鉴收集页，04_MetaProgression.md §5） |
 | POPUP_TREE | tree | BasePopup（成长树：节点购买/升级 + 钻石余额，04_MetaProgression.md §8） |
+
+> 跨场景复用的弹窗必须带模式参数：`POPUP_BAG` 支持 `BagMode = "manage" | "battle"`（主界面管理视图 / 局内只读仓库视图），同一实现按模式切换按钮与可见性，禁止复制两份界面。
+
+### 组件（ComponentConst，挂 prefab/ui）
+
+| 常量 | prefab 路径 |
+|---|---|
+| COMP_CARD_VIEW | ui/card_view |
+| COMP_CARD_STACK | ui/card_stack |
+| COMP_STATUS_BAR | ui/status_bar |
+| COMP_RESOURCE_BADGE | ui/resource_badge |
+| COMP_FLOATING_NUMBER | ui/floating_number |
+| COMP_TOOLTIP | ui/tooltip |
+| COMP_RESULT_PANEL | ui/result_panel |
+| COMP_WALLET_BAR | ui/wallet_bar |
+| COMP_LOADING_VIEW | ui/loading_view |
 
 ## 5. 维护要求
 

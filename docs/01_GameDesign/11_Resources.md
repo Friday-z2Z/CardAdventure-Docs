@@ -6,12 +6,14 @@
 
 | 资源 | 获取途径 | 消耗途径 | 上限 | 溢出处理 | 归零后果 |
 |---|---|---|---|---|---|
-| HP | 恢复卡、治疗道具、regeneration 状态、事件 | 敌人攻击、陷阱、食物不足惩罚、状态 tick（毒/灼烧） | MaxHP（30 起步） | 超出部分**不保留**（03_Cards.md C 节） | =0 立即失败（01_CoreLoop.md 第 5 节） |
-| Food | 资源卡、敌人掉落、ration 道具、事件 | 每次有效卡牌操作 -1、陷阱、事件献祭 | 99（显示上限，超出截断） | 截断 | **不禁止操作**：每次有效操作额外 -2 HP（01_CoreLoop.md 第 4 节） |
-| Gold | 资源卡、敌人奖励、连击、通关、事件 | 商店购买、evt_shrine 类献祭、扣金币陷阱 | 99999（显示上限） | 截断 | 无法支付 → 错误码 `NOT_ENOUGH_GOLD`，禁止负数 |
-| Shield | shield_scroll 道具、恢复卡 OptionalShield、部分装备 | 抵消敌方伤害（10_Battle.md 第 4 节顺序） | 30（硬上限） | 截断 | 无后果（无护盾即无抵消） |
+| HP | 恢复卡、治疗道具、regeneration 状态、事件 | 敌人攻击、陷阱、食物不足惩罚、状态 tick（毒/灼烧） | MaxHP（Balance `player.maxHp`，基准 30） | 超出部分**不保留**（03_Cards.md C 节） | =0 立即失败（01_CoreLoop.md 第 5 节） |
+| Food | 资源卡、敌人掉落、ration 道具、事件 | 每次有效卡牌操作 -1、陷阱、事件献祭 | Balance `limits.foodCap`（基线 99，显示上限） | 截断 | **不禁止操作**：每次有效操作额外 -2 HP（01_CoreLoop.md 第 4 节） |
+| Gold | 资源卡、敌人奖励、连击、通关、事件 | 商店购买、evt_shrine 类献祭、扣金币陷阱 | Balance `limits.goldCap`（基线 99999） | 截断 | 无法支付 → 错误码 `NOT_ENOUGH_GOLD`，禁止负数 |
+| Shield | shield_scroll 道具、恢复卡 OptionalShield、部分装备 | 抵消敌方伤害（10_Battle.md 第 4 节顺序） | Balance `limits.shieldCap`（基线 30，硬上限） | 截断 | 无后果（无护盾即无抵消） |
 
 通用约束：四资源结算全部走资源系统（ResourceSystem），任何系统不得绕过；每次变更后发布对应 `*_changed` 事件（04_EventCatalog.md）并复核状态不变式（02_Player.md 第 1 节）。
+
+**Shield 生命周期**：不随回合衰减，只在抵消伤害时消耗，**关卡结束清零**（不跨关）；上限取 Balance `limits.shieldCap`（基线 30），防止单卡叠满免疫整关。
 
 ## 2. Turn 与 Combo
 

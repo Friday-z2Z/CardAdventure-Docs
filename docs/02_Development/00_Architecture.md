@@ -96,6 +96,48 @@ JSON 配置文件
 | IPlatformService | 震动（vibrate）、剪贴板等杂项平台能力 |
 | IAssetService | 资源加载、分包加载、CDN 资源 |
 
+**接口最小方法集（B1 按此出空实现）**：
+
+```ts
+interface IStorageService {
+  read<T>(key: string): T | null;                  // 同步读，启动恢复用
+  write(key: string, value: unknown): Promise<ActionResult>;
+  remove(key: string): Promise<void>;
+}
+interface IAssetService {
+  load<T>(key: string): Promise<T>;                // resources / bundle / 远程统一入口
+  preloadStage(stage: number): Promise<void>;
+  release(key: string): void;
+}
+interface IAudioService {
+  playBgm(id: string, fadeMs?: number): void;
+  stopBgm(fadeMs?: number): void;
+  playSfx(id: string): void;
+  setVolume(channel: "bgm" | "sfx" | "master", value: number): void;
+}
+interface IShareService {
+  share(scene: "clear" | "codex" | "rank", payload: Record<string, unknown>): Promise<ActionResult>;
+}
+interface IPlatformService {
+  vibrate(type: "light" | "medium" | "heavy"): void;
+  getSafeArea(): { top: number; bottom: number };
+}
+interface IPaymentService {                        // 冻结：仅预留定义，不实现
+  isAvailable(): boolean;
+  purchase(sku: string): Promise<ActionResult>;
+}
+interface IAnalyticsService {
+  track(event: string, params: Record<string, unknown>): void;   // 隐私同意后才入队
+  flush(): Promise<void>;
+}
+interface ILeaderboardService {
+  open(tab: "friend" | "daily"): void;
+  close(): void;
+  refresh(): void;
+  submitScore(level: number): Promise<ActionResult>;
+}
+```
+
 好处：平台 API 变更时只改一处；测试环境可注入 mock 实现；未来跨平台无需重写业务。
 
 ## 6. 代码目录（Cocos Creator 工程）
@@ -152,3 +194,16 @@ card-adventure/                  Creator 项目根（Dashboard 打开）
 | npm scripts | test / validate / export:balance / export:copy / check:licenses | 数据流水线与 CI（输入输出契约见 06_DataBalance.md §3） |
 
 初始化顺序：主体注册（00_Compliance.md）→ Creator 建工程 → 按第 6 节建目录骨架 → services 接口空实现 → 第一个可构建的微信包 → tests+lint 跑通 → 之后才写业务。
+
+**版本与配置基线（B1 冻结项）**：
+
+| 项 | 锁定值 |
+|---|---|
+| Node.js | **≥20 LTS**；低于 20 时 Vitest 与 ESM 脚本不可用，先升级再开工 |
+| Cocos Creator | 3.8.x，初始化时把具体小版本号记入 README |
+| Vitest | ^2，Node 环境运行 `tests/`，不依赖引擎 |
+| ESLint / Prettier | ^9 / ^3，配置文件入库，禁令以规则形式落地 |
+| xlsx | ^0.20，**仅** `export:balance` 脚本用（devDependency，不进包） |
+| tsconfig | `strict`、`noImplicitAny`、`noUnusedLocals`、`noUncheckedIndexedAccess`、`exactOptionalPropertyTypes`；与引擎类型冲突的单项可豁免，须在文件内注释原因 |
+| 文件命名 | 代码 kebab-case（`effect-resolver.ts`）、类/类型 PascalCase、配置 snake_case、测试 `*.test.ts` 与 `tests/` 目录镜像 |
+| CI 触发 | 每个 PR：typecheck + `npm test` + `npm run validate` + `node scripts/check-doc-refs.mjs`；构建仅 release 分支 |

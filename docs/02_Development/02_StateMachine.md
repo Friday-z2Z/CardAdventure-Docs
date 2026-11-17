@@ -28,7 +28,7 @@ Boot → Loading → MainMenu → LevelSelect → LevelInit
 | Resolving | 观看演出 | 任何影响结算的输入 | ActionQueue 开始执行 | 队列清空 | 结算异常 → 记录日志、回滚到队列起点快照 |
 | CheckResult | — | 玩家输入 | 队列清空 | 判定完成 | — |
 | LevelVictory / LevelDefeat | 确认 | 操作 | CheckResult 判定 | 进入 LevelResult | — |
-| LevelResult | 查看结算、下一关/重试/回菜单；失败时可看广告复活（每关 1 次，01_Monetization.md） | 操作 | 胜利或失败确认 | 场景切换（复活 → 回 PlayerTurn） | 存档失败 → 本地暂存并重试；广告不可用 → 复活按钮置灰 |
+| LevelResult | 查看结算、下一关/重试/回菜单；失败时可看广告复活（每关 1 次，01_Monetization.md） | 操作 | 胜利或失败确认 | 场景切换（复活 → 回 PlayerTurn，**原地续战不回滚**：致死行动已结算、卡已消耗，仅恢复 HP 与清 Combo） | 存档失败 → 本地暂存并重试；广告不可用 → 复活按钮置灰 |
 | NextLevelInit | — | — | 通关确认进入下一关 | 进入 LevelInit | 同 LevelInit |
 
 ## 3. 转移规则（硬性约束）

@@ -90,6 +90,7 @@ interface StatusEffectInstance {
 - `vulnerable` 属于**受击方**：玩家攻击敌人时读敌人的 vulnerable（×1.5），敌人攻击玩家时读玩家的（10_Battle.md §4）。
 - `shielded` **不写入状态列表**——护盾由 `Shield` 数值体现（11_Resources.md §1），避免与"同 id 至多一条"不变式冗余冲突。
 - 同名效果重复施加：`stacks` 按 §2.2 的叠加方式处理，`duration` 统一取 `max(旧, 新)`（不累加时长，防无限续）。
+- **duration 递减时机**：施加当回合不递减；每个 priority 50 tick 结算后 −1，归零移除（中毒 3 回合 = 3 次 tick 伤害）。
 
 ### 2.2 数值基线（Balance `status` 页维护，待实测校准）
 
@@ -101,3 +102,5 @@ interface StatusEffectInstance {
 | vulnerable | 受击结算时 | 受到伤害 ×1.5 | 1 回合 | replace |
 | regeneration | 行动结束 | +2 HP（不超 MaxHP） | 3 回合 | add |
 | exhausted | 成本结算（priority 20） | 本次操作食物成本 +1 | 2 回合 | replace |
+
+> `weakness` 的配置约束：伤害公式有 `max(1, …)` 保底，攻击 1 时 −1 会被吞掉，**因此 weakness 来源（敌人技能/事件）只在阶段二起投放**（此时玩家通常已有武器加成）；阶段一配置 weakness 视为无效内容，Validator 告警。

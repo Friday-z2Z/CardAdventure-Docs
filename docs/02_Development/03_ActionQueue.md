@@ -54,18 +54,45 @@ interface Action {
 
 ```ts
 interface EffectDefinition {
-  type: EffectType;        // damage | heal | resource | status | flag | spawnCard | ...
+  type: EffectType;        // damage | heal | resource | status | flag | spawnCard | transformStack
   target: TargetRule;
-  value?: number;
-  condition?: ConditionRule;   // 执行前置条件
+  value?: number;          // 主数值：damage/heal 的数值；status 的层数；flag 的布尔/数值
+  valueRange?: { min: number; max: number };  // 数值区间（与 value 互斥，如钱袋 +3～5）；随机走 level 子流，随 actionId 记录
+  params?: EffectParams;   // 按 type 的附加参数，见下表
+  consume?: { itemId: string; quantity: number };  // 结算成功后扣库存（如机关门消耗钥匙），失败不扣
+  condition?: ConditionRule;   // 执行前置条件（执行时求值）
   trigger?: string;            // 被动触发点（如 "on_enemy_died"）；缺省为主动效果，随动作立即执行
   priority: number;            // 同一结算批次内的执行顺序，小者先
   delay?: number;              // 演出延迟（不影响逻辑，只影响动画排程）
-  cancelable: boolean;         // 是否可被免疫/护盾/烟雾弹类效果取消
+  cancelable: boolean;         // 是否可被免疫/取消（与数值减免是两层，见下）
   repeat?: number;             // 重复次数（如灼烧 tick）
   stack?: "replace" | "add" | "max";  // 与已有同类效果叠加方式
 }
+
+// params 的结构由 EffectDefinition.type 决定，不重复设判别字段
+type DamageParams = { ignoreDefense?: boolean; blockedByShield?: boolean };
+type HealParams = { cleanse?: string[] };
+type ResourceParams = { resource: "hp" | "food" | "gold" | "shield" };
+type StatusParams = { effectId: string; duration: number };
+type FlagParams = { key: string };
+type SpawnCardParams = { cardId: string; stackId?: string; position: "top" };
+type TransformStackParams = { op: "swapTop" | "reverse" | "moveTopToBottom" | "shuffle"; targetStackId: string };
+
+type EffectParams = DamageParams | HealParams | ResourceParams | StatusParams
+                  | FlagParams | SpawnCardParams | TransformStackParams;
 ```
+
+| type | `value` 含义 | `params` 要求 | 备注 |
+|---|---|---|---|
+| damage | 伤害数值 | `ignoreDefense`（默认 false）、`blockedByShield`（默认 true） | 落地顺序仍是 减免 → 护盾 → 扣血（10_Battle.md §4） |
+| heal | 恢复量 | `cleanse`（可解除的状态 id 列表） | 超上限部分不保留 |
+| resource | 增量（可为负） | `resource` 指定 hp/food/gold/shield | 走 ResourceSystem 与上限校验 |
+| status | 层数 | `effectId`、`duration`（回合） | 同名同 id 走叠加规则（02_Player.md §2.2） |
+| flag | 布尔或数值 | `key` | 写 `runFlags`，机关/出口条件读取 |
+| spawnCard | — | `cardId`、`stackId`（缺省目标堆）、`position: "top"` | 生成敌人/卡牌到堆顶 |
+| transformStack | — | `op`、`targetStackId` | 改堆序的四类原子操作 |
+
+**减免与取消是两层机制**：`blockedByShield` / `ignoreDefense` 决定**数值**是否被护盾与防御削减；`cancelable` 决定效果能否被**免疫/取消**（如 `poison_cure` 清毒、烟雾弹跳过反击）。陷阱默认 `blockedByShield: true`、`ignoreDefense: false`。
 
 规则：
 

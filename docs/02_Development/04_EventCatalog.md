@@ -36,7 +36,7 @@ enemy_died（BattleSystem 发布）
 | stack_updated | stackId, cell, remaining, topCard（dark 堆不下发卡面，UI 只渲染剩余张数角标——00_UiSpec.md §3 暗牌规则） | 卡牌系统 | UI |
 | enemy_damaged | enemyId, amount, overkill | 战斗系统 | UI、统计 |
 | enemy_died | enemyId, rewards | 战斗系统 | 奖励、连击、音效、UI、统计 |
-| player_damaged | amount, source | 战斗/状态系统 | UI、统计 |
+| player_damaged | amount, source（`enemy` / `trap` / `status` / `food` / `event`） | 战斗/状态系统 | UI、统计（`level_fail.cause` 归因依赖 source） |
 | player_died | cause | 状态系统 | UI、统计、存档 |
 | hp_changed | value, delta | 资源系统 | UI |
 | food_changed | value, delta, reason | 资源系统 | UI、统计 |

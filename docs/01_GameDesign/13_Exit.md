@@ -20,6 +20,7 @@ interface ExitRule {
 - `kill` 型：需击败的指定敌人（enemyId）。
 - `collect` 型：需持有指定物品与数量（itemId / quantity）。**只查局内可用道具**（已携带 + 本关获得），不查锁定的仓库库存——否则可绕过携带制开门（04_Items.md §3）。
 - `pay` 型：到达出口需支付的金币（gold）。支付动作的 ActionType 固定为 `exit_pay`（03_ActionQueue.md §3），不足回 `NOT_ENOUGH_GOLD` 且不扣款。
+- `surviveTurns` 目标（关卡 `objective.type`）：撑满 N 回合写入 `runFlags.survive_cleared`，由 `flag` 型出口规则引用解锁出口，不直接通关（06_Levels.md §3）。
 - 多条规则同时配置时为 **AND** 关系（全部满足）。
 - 条件由 LevelValidator 静态核查可满足性（06_DataBalance.md 第 2 节）。
 
@@ -34,6 +35,7 @@ interface ExitRule {
 
 - 判定是**只读检查**，不进 Resolving：不消耗食物、不计连击、不触发演出锁（03_Cards.md I 节）；缺口提示走错误码 `EXIT_CONDITION_UNMET` + 缺口明细。
 - pay 型支付成功后金币扣除走 ActionQueue，与商店共用支付路径（16_Shop.md）。
+- **dark 堆顶的出口卡**：翻开即做只读检查；满足条件则通关，不满足则留在堆顶并转为 `lit`，不消耗食物、不进 ActionQueue。
 - 出口不可达 / 出口不存在的关卡配置直接被 LevelValidator 拦截，不进运行时。
 
 ## 3. 击杀记录

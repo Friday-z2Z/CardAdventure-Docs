@@ -27,7 +27,7 @@ interface LevelDefinition {
   themeId: string;                 // 主题见第 2 节阶段划分
   difficultyTier: number;          // 1～5，对应五阶段
   startingState: LevelStartingState;
-  cardPoolIds: string[];
+  cardIds: string[];
   stackLayout: "matrix5";                    // 布局全阶段统一 5×5 矩阵盘（2026-10 用户修订；字段保留以便未来扩展）
   stacks: StackConfig[];                     // 2～20 个堆（随阶段递进，§3.1 基线），每堆必填 cell
   objective: LevelObjective;
@@ -53,7 +53,7 @@ interface StackConfig {
   cell: [number, number];            // 5×5 盘中坐标 [row, col]（0～4），不得重叠（全阶段 matrix5，2026-10）
   depth: number;                     // 堆深（卡数），按阶段递进（§3.1 基线），各堆可不同
   reveal?: "lit" | "dark";           // 顶牌可见度（默认 lit）：lit=顶牌亮明；dark=顶牌暗置，只显示"剩余张数"角标（参考 Card of Darkness 红色数字徽章）；下层恒为暗牌。同关各堆可混合——如 4 堆两 lit 两 dark = "部分亮"（2026-10 用户定义）
-  composition: { cardPoolId: string; weight: number }[];  // 权重抽卡
+  composition: { cardId: string; weight: number }[];  // 权重抽卡
   fixedCards?: { index: number; cardId: string }[];       // 固定关的钉死卡位（教学/首领用）
 }
 ```
@@ -65,10 +65,12 @@ interface StackConfig {
 ```ts
 interface LevelObjective {
   type: "reachExit" | "killAll" | "surviveTurns";
-  target?: string | number;          // 按 type 语义取值
+  target?: string | number;          // reachExit 无需；killAll = enemyId 或 "*"；surviveTurns = 回合数
   displayText: string;               // 关卡信息区目标文案（LocalizationValidator 检查）
 }
 ```
+
+**surviveTurns 语义**：撑满 `target` 个回合后写 `runFlags.survive_cleared = true`，由 `exitRules` 的 flag 型引用**解锁出口**，**不直接通关**——保留"还能不能再贪一点"的决策；回合计入以 Turn 为准（10_Battle.md §3）。
 
 `ExitRule` 见 13_Exit.md；`RewardConfig` 见 12_Rewards.md；`BossPhase` 见 14_EliteBoss.md。
 
@@ -171,7 +173,7 @@ C 卡池威胁因子 = clamp(0, 1, (Σ(weight × threat) / Σweight) / 10)
     "carryOverInventory": true,
     "startingItems": []
   },
-  "cardPoolIds": [
+  "cardIds": [
     "enemy_rat_01", "enemy_slime_01", "enemy_bat_01",
     "res_gold_pouch", "res_food_cache",
     "heal_herb", "trap_spikes", "evt_campfire",
@@ -184,11 +186,11 @@ C 卡池威胁因子 = clamp(0, 1, (Σ(weight × threat) / Σweight) / 10)
       "reveal": "lit",
       "depth": 3,
       "composition": [
-        { "cardPoolId": "enemy_rat_01", "weight": 3 },
-        { "cardPoolId": "enemy_slime_01", "weight": 3 },
-        { "cardPoolId": "res_gold_pouch", "weight": 2 },
-        { "cardPoolId": "res_food_cache", "weight": 1 },
-        { "cardPoolId": "heal_herb", "weight": 1 }
+        { "cardId": "enemy_rat_01", "weight": 3 },
+        { "cardId": "enemy_slime_01", "weight": 3 },
+        { "cardId": "res_gold_pouch", "weight": 2 },
+        { "cardId": "res_food_cache", "weight": 1 },
+        { "cardId": "heal_herb", "weight": 1 }
       ]
     },
     {
@@ -196,11 +198,11 @@ C 卡池威胁因子 = clamp(0, 1, (Σ(weight × threat) / Σweight) / 10)
       "reveal": "lit",
       "depth": 8,
       "composition": [
-        { "cardPoolId": "enemy_rat_01", "weight": 2 },
-        { "cardPoolId": "res_food_cache", "weight": 1 },
-        { "cardPoolId": "heal_herb", "weight": 1 },
-        { "cardPoolId": "trap_spikes", "weight": 1 },
-        { "cardPoolId": "res_gold_pouch", "weight": 1 }
+        { "cardId": "enemy_rat_01", "weight": 2 },
+        { "cardId": "res_food_cache", "weight": 1 },
+        { "cardId": "heal_herb", "weight": 1 },
+        { "cardId": "trap_spikes", "weight": 1 },
+        { "cardId": "res_gold_pouch", "weight": 1 }
       ]
     },
     {
@@ -208,12 +210,12 @@ C 卡池威胁因子 = clamp(0, 1, (Σ(weight × threat) / Σweight) / 10)
       "reveal": "lit",
       "depth": 10,
       "composition": [
-        { "cardPoolId": "enemy_bat_01", "weight": 3 },
-        { "cardPoolId": "trap_spikes", "weight": 2 },
-        { "cardPoolId": "res_gold_pouch", "weight": 2 },
-        { "cardPoolId": "evt_campfire", "weight": 1 },
-        { "cardPoolId": "mech_lever", "weight": 1 },
-        { "cardPoolId": "exit_door", "weight": 1 }
+        { "cardId": "enemy_bat_01", "weight": 3 },
+        { "cardId": "trap_spikes", "weight": 2 },
+        { "cardId": "res_gold_pouch", "weight": 2 },
+        { "cardId": "evt_campfire", "weight": 1 },
+        { "cardId": "mech_lever", "weight": 1 },
+        { "cardId": "exit_door", "weight": 1 }
       ],
       "fixedCards": [
         { "index": 4, "cardId": "mech_lever" },
@@ -267,7 +269,7 @@ C 卡池威胁因子 = clamp(0, 1, (Σ(weight × threat) / Σweight) / 10)
 
 | 项 | 规格 |
 |---|---|
-| 策略集 | 低血敌优先 / 食物优先 / 治疗优先 / 高收益优先 / 拆陷阱优先 / 随机合法，固定 6 种 |
+| 策略集 | 低血敌优先 / 食物优先 / 治疗优先 / 高收益优先 / 拆陷阱优先 / 道具辅助（卡关时使用已携带道具）/ 随机合法，固定 7 种 |
 | 局数 | 每关每策略 1 条确定性回放（同种子）+ "随机合法"策略追加 99 条（种子序列 0～98） |
 | 可解判定 | 至少 1 条策略首轮回放即通关，且任何策略都不出现"无合法操作且未通关"死锁 |
 | 两端配置 | 零解锁 = 无加成 / 1 槽；满解锁 = 成长树全满 + 5 槽按白名单价值前 5 件 + 钱包购买 3 件消耗品 |
