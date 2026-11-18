@@ -50,21 +50,48 @@ interface ItemInstance {
 
 **扣除时机统一：效果成功提交后才扣；消耗即生效的特殊道具须在配置中单独注明。**
 
-## 4. 首批道具（MVP）
+## 4. 道具全表（20 件，按阶段解锁）
 
-| ID | 名称 | 效果 | 使用场景 | 稀有度 |
-|---|---|---|---|---|
-| potion_small | 小型药剂 | 恢复 8 HP | 低生命值 | common |
-| potion_large | 大型药剂 | 恢复 18 HP | 高风险战斗后 | uncommon |
-| bomb | 爆破炸弹 | 对目标敌人造成 10 伤害 | 快速削弱敌人 | uncommon |
-| shield_scroll | 护盾卷轴 | 获得 8 护盾 | 应对高伤害敌人 | uncommon |
-| ration | 应急口粮 | 恢复 5 食物 | 食物不足 | common |
-| poison_cure | 解毒药剂 | 解除中毒 | 中毒时 | common |
-| smoke_bomb | 烟雾弹 | 当前敌人跳过反击一次 | 应对强敌 | rare |
-| gold_magnet | 聚财符 | 本关后续金币奖励 +25% | 金币收益策略 | rare |
-| key | 古旧钥匙 | 开启对应锁门 | 机关或出口条件 | uncommon |
-| luck_charm | 幸运护符 | 本关一次奖励提升 | 奖励策略 | rare |
-| item_torch | 火把 | **查看指定暗堆顶部 2 张**（不翻开、不触发效果、不消耗卡牌） | 暗堆风险决策 | rare |
+| ID | 名称 | 效果 | 使用场景 | 稀有度 | 引入 |
+|---|---|---|---|---|---|
+| potion_small | 小型药剂 | 恢复 8 HP | 低生命值 | common | 一 |
+| potion_large | 大型药剂 | 恢复 18 HP | 高风险战斗后 | uncommon | 一 |
+| bomb | 爆破炸弹 | 对目标敌人造成 10 伤害 | 快速削弱敌人 | uncommon | 一 |
+| shield_scroll | 护盾卷轴 | 获得 8 护盾 | 应对高伤害敌人 | uncommon | 一 |
+| ration | 应急口粮 | 恢复 5 食物 | 食物不足 | common | 一 |
+| poison_cure | 解毒药剂 | 解除中毒 | 中毒时 | common | 一 |
+| smoke_bomb | 烟雾弹 | 当前敌人跳过反击一次 | 应对强敌 | rare | 一（商店阶段三） |
+| gold_magnet | 聚财符 | 本关后续金币奖励 +25% | 金币收益策略 | rare | 一（商店阶段四） |
+| key | 古旧钥匙 | 开启对应锁门 | 机关或出口条件 | uncommon | 一 |
+| luck_charm | 幸运护符 | 本关一次奖励提升 | 奖励策略 | rare | 一（商店阶段四） |
+| item_torch | 火把 | **查看指定暗堆顶部 2 张**（不翻开、不触发效果、不消耗卡牌） | 暗堆风险决策 | rare | 一（商店阶段三） |
+| item_food_bundle | 干粮袋 | 恢复 8 食物 | 长线续航 | common | 二 |
+| item_trail_mix | 行军干粮 | 恢复 3 食物，失去 2 HP | 拿血换路 | common | 二 |
+| item_antidote_plus | 强效解毒剂 | 解除中毒并恢复 4 HP | 中毒且低血 | uncommon | 二 |
+| item_shield_greater | 强化护盾卷轴 | 获得 12 护盾 | 高伤害敌人 | uncommon | 二 |
+| item_bomb_large | 大型炸弹 | 对目标敌人造成 15 伤害 | 精英/首领 | rare | 三 |
+| item_elixir | 琥珀药剂 | 恢复 25 HP | 濒死 | rare | 三 |
+| item_torch_plus | 强化火把 | 查看指定暗堆顶部 3 张 | 深暗堆决策 | uncommon | 三 |
+| item_iron_skin | 铁皮药剂 | 获得 6 护盾并解除虚弱 | 抗压 | uncommon | 三 |
+| item_pass_token | 通行令 | 写入 `runFlags.pass_granted`（供 flag 型出口，一次性） | 绕过出口条件 | rare | 三 |
+| item_blood_rage | 血怒药剂 | 本关攻击 +2（`buff`），并中毒 1 层 | 以血换输出 | uncommon | 三 |
+| item_phoenix_feather | 不死鸟之羽 | 被动：死亡时自动复活 25% HP（每关 1 次） | 保险 | rare | 四 |
+| item_timeglass | 碎沙漏 | 本回合所有敌人跳过反击 | 多敌/首领战 | rare | 四 |
+| item_fire_flask | 燃烧瓶 | 3 点伤害并施加灼烧 1 层 | 群体/持续伤害 | uncommon | 四 |
+| item_war_drum | 战鼓 | 本关攻击 +1（`buff`） | 长线输出 | uncommon | 四 |
+| item_iron_will | 铁片护符 | 解除疲劳并恢复 4 食物 | 成本压制 | uncommon | 四 |
+| item_guard_tonic | 护盾药剂 | 本关防御 +1（`buff`） | 长线抗压 | uncommon | 四 |
+| item_void_tonic | 星盐药剂 | 恢复 30 HP 并解除中毒 | 终局战 | epic | 五 |
+| item_void_bomb | 陨星炸弹 | 对目标敌人造成 20 伤害 | 首领战 | epic | 五 |
+| item_second_wind | 回魂香 | 恢复 8 HP 并解除全部状态 | 状态压制 | epic | 五 |
+| item_vigor_root | 巨木根 | 本关 MaxHP +3 并恢复 3 HP | 长线抗压 | rare | 五 |
+| item_eternal_ember | 永恒火种 | **使用后**：本关内首次致死自动复活 50% HP，触发后失效（一次性消耗；与不死鸟之羽取高不叠加） | 终局保险 | legendary | 五 |
+
+**统计**：一 11 件 / 二 4 件 / 三 6 件 / 四 6 件 / 五 5 件 = **32 件**；商店可售 27 件（排除 `key`、三枚炸弹与传说 `item_eternal_ember`），可携带 31 件（排除 `key`）。
+
+**通行令约束**：`item_pass_token` 写入的 `pass_granted` 必须与至少一个关卡的 `exitRules` flag 条件配对，否则该道具在该关无用；LevelValidator 检查"可获得通行令"与 flag 出口的配对关系。
+
+**永恒火种形态**：`item_eternal_ember.useType = "instant"`——使用后写入本关"首次致死免疫"标记并消耗自身，**不是 passive**；Balance `items` sheet 的 `useType` 列按此填写。
 
 注意：数值非最终平衡结论；道具必须有明确稀有度、获取途径和解锁关卡；不能一种道具解决所有问题；高级道具必须稀缺；效果必须走效果引擎。**玩家可见的道具介绍文案见 `../03_UI/02_CopyDeck.md` 第 1 节。**
 

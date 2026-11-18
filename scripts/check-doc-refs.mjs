@@ -253,6 +253,70 @@ if (decisionDoc) {
   });
 }
 
+// ---------- 8. 内容密度预算（18_LevelProduction.md §12） ----------
+const cardsDoc = byBase.get("03_Cards.md");
+const itemsDoc = byBase.get("04_Items.md");
+if (cardsDoc && itemsDoc) {
+  const counts = { eq: {}, enemy: {}, elite: {}, trap: {}, event: {}, item: {} };
+  let stage = null;
+  for (const line of cardsDoc.lines) {
+    const h = /^### 阶段([二三四五])/.exec(line);
+    if (h) {
+      stage = h[1];
+      continue;
+    }
+    if (/^##\s/.test(line)) stage = null;
+    if (!stage || !line.startsWith("|")) continue;
+    const cells = splitCells(line);
+    if (!cells || cells.length < 3) continue;
+    const t = cells[2].trim();
+    if (t === "equipment") counts.eq[stage] = (counts.eq[stage] || 0) + 1;
+    else if (t === "enemy") counts.enemy[stage] = (counts.enemy[stage] || 0) + 1;
+    else if (t.startsWith("enemy") && t.indexOf("精英") >= 0) counts.elite[stage] = (counts.elite[stage] || 0) + 1;
+    else if (t === "trap") counts.trap[stage] = (counts.trap[stage] || 0) + 1;
+    else if (t === "event") counts.event[stage] = (counts.event[stage] || 0) + 1;
+  }
+  for (const line of itemsDoc.lines) {
+    if (!line.startsWith("|")) continue;
+    const cells = splitCells(line);
+    if (!cells || cells.length < 6) continue;
+    const m = /^([一二三四五])/.exec(cells[5].trim());
+    if (!m) continue;
+    counts.item[m[1]] = (counts.item[m[1]] || 0) + 1;
+  }
+  const budget = {
+    二: { eq: 2, item: 2, enemy: 4, elite: 0, trap: 1, event: 1 },
+    三: { eq: 2, item: 1, enemy: 3, elite: 2, trap: 2, event: 1 },
+    四: { eq: 2, item: 2, enemy: 3, elite: 2, trap: 2, event: 2 },
+    五: { eq: 2, item: 2, enemy: 3, elite: 2, trap: 1, event: 2 },
+  };
+  const labels = { eq: "装备", item: "道具", enemy: "普通敌人", elite: "精英", trap: "陷阱", event: "事件" };
+  for (const s of Object.keys(budget)) {
+    for (const k of Object.keys(budget[s])) {
+      const got = counts[k][s] || 0;
+      if (got < budget[s][k]) {
+        add("18_LevelProduction.md", 0, "内容密度", `阶段${s} ${labels[k]} ${got} 项，预算 ≥${budget[s][k]}`);
+      }
+    }
+  }
+}
+
+// ---------- 9. CopyDeck key 唯一 ----------
+const copyDoc = byBase.get("02_CopyDeck.md");
+if (copyDoc) {
+  const seen = new Map();
+  copyDoc.lines.forEach((line, i) => {
+    if (!line.startsWith("|")) return;
+    const first = line.split("|")[1]?.trim();
+    if (!first || !first.startsWith("key:")) return;
+    if (seen.has(first)) {
+      add("02_CopyDeck.md", i + 1, "key 重复", `${first} 已在第 ${seen.get(first)} 行出现`);
+    } else {
+      seen.set(first, i + 1);
+    }
+  });
+}
+
 // ---------- 输出 ----------
 if (problems.length === 0) {
   console.log(`文档引用校验通过：${allFiles.length} 个文件，0 处问题。`);

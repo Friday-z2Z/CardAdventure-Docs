@@ -8,7 +8,7 @@
 - 入口形态（双入口，同一商店弹窗 POPUP_SHOP）：
   1. **主界面商店**：常驻入口，主界面钱包栏旁。
   2. **准备档口入口**：进关后的准备档口（LevelInit 内，2026-10 修订——原"通关结算页入口"移除，结算页不设商店）提供商店入口，即买即入背包可携带；**点击战斗按钮后商店入口消失**（购物窗口仅限准备档口，03_UI/03_Screens.md 2.1）。
-- **开放时机**：阶段二（通过第 20 关）起开放购买；MVP 期间主界面与结算页入口展示但置灰，点击提示未开放文案（02_CopyDeck.md §5）。
+- **开放时机**：阶段二（通过第 20 关）起开放购买；阶段一主界面与准备档口入口展示但置灰，点击提示未开放文案（02_CopyDeck.md §5）；结算页无商店入口。
 - **局内禁设商店**：关卡内无货架商店（原"商店关"形态废弃，`shopConfig` 字段停用，06_Levels.md §3）；evt_merchant（流浪商人事件卡）是局内唯一购买例外——单次交易、走 EventChoice 弹窗、消耗**局内金币**（11_Resources.md §3 金币双层制）。
 - **只买不卖**（维持冻结）：不出售道具换金币；若后续开放须先补背包容量设计。
 - 货币边界：商店只收钱包金币，只卖消耗品（药水/护盾/口粮类）；钻石只用于永久成长（04_MetaProgression.md §2），两线不互通。
@@ -19,23 +19,27 @@
 | 项 | 规则 |
 |---|---|
 | 货池 | 基础池 `potion_small / potion_large / shield_scroll / ration / poison_cure`，随玩家最深通关阶段扩展（阶段系数表登记 Balance 表）；走统一随机（种子驱动，同日同货架） |
-| 货架数量 | 4～6 件 |
-| 稀有度权重 | common 70% / uncommon 25% / rare 5%，随阶段偏移（Balance 表） |
-| 刷新 | 手动刷新付费（钱包金币，价格递增 2/4/8…）；每日免费刷新 1 次（自然日重置，日期随存档记录） |
+| 货架数量 | **固定 5 件/次**（Balance `shop.slotCount`） |
+| 稀有度权重 | common 70% / uncommon 25% / rare 4% / epic 1%，随阶段偏移（Balance `shop.epicWeight`） |
+| 刷新 | **固定 5 钱包金币/次**（Balance `shop.refreshCost`，**不递增**）；每日免费刷新 1 次（自然日重置，日期随存档记录）；看广告可再免 1 次（01_Monetization.md） |
 
 **扩展池（逐阶段解锁，2026-10 定稿）**：
 
 | 解锁进度 | 新增道具 |
 |---|---|
-| 阶段三（通过第 80 关） | smoke_bomb 烟雾弹、item_torch 火把（rare） |
-| 阶段四（通过第 180 关） | gold_magnet 聚财符、luck_charm 幸运护符（rare） |
-| **永不入店** | bomb（仅局内商人/奖励产出——避免"买炸弹秒精英"破坏精英战设计）、key（进度类道具） |
+| 阶段二（通过第 20 关） | item_food_bundle 干粮袋、item_trail_mix 行军干粮、item_antidote_plus 强效解毒剂、item_shield_greater 强化护盾卷轴 |
+| 阶段三（通过第 80 关） | smoke_bomb 烟雾弹、item_torch 火把、item_torch_plus 强化火把、item_iron_skin 铁皮药剂、item_pass_token 通行令、item_blood_rage 血怒药剂 |
+| 阶段四（通过第 180 关） | gold_magnet 聚财符、luck_charm 幸运护符、item_phoenix_feather 不死鸟之羽、item_timeglass 碎沙漏、item_fire_flask 燃烧瓶、item_war_drum 战鼓、item_iron_will 铁片护符、item_guard_tonic 护盾药剂 |
+| 阶段五（通过第 320 关） | item_elixir 琥珀药剂、item_void_tonic 星盐药剂、item_second_wind 回魂香、item_vigor_root 巨木根（rare/epic） |
+| **永不入店** | bomb / item_bomb_large / item_void_bomb（仅局内商人/奖励产出，避免"买炸弹秒精英"）、key（进度类道具）、**所有 legendary**（固定来源：成就/首领钉位） |
 
-道具池共 11 种（04_Items.md §4），**可售 9 种** = 基础池 5 种 + 扩展池 4 种（smoke_bomb / gold_magnet / luck_charm / item_torch）；排除 key（进度类道具）与 bomb（不入店）。rare 权重槽位（5%）由扩展池道具承接。
+道具池共 32 种（04_Items.md §4），**可售 27 种** = 基础池 5 种 + 扩展池 22 种（按阶段解锁，见上表）；排除 key（进度类）、三枚炸弹（bomb / item_bomb_large / item_void_bomb）与传说 `item_eternal_ember`。rare/epic 权重槽位由扩展池道具承接。
+
+**可售稀有度分布（满池，2026-11-18）**：common 5 / uncommon 11 / rare 9 / epic 2 / **legendary 0（不入店）**；单件 rare 出现概率 ≈4% ÷ 9 ≈ **0.44%/槽**，单件 epic ≈1% ÷ 2 = **0.5%/槽**（固定 5 槽刷新：rare 约 2.2%，epic 约 2.5%）。战鼓、铁片护符、强化火把已由 rare 降为 uncommon，避免 rare 被稀释；M-C 实测后再按 TBD-35 调整。
 
 ## 3. 价格与支付
 
-- 价格 = 道具基价 × 阶段系数（Balance 表）；区间约束见 09_BalanceBaseline.md 第 5 节（common 5～8 / rare 12～20）。
+- 价格 = 道具基价 × 阶段系数（Balance 表）；区间约束见 09_BalanceBaseline.md §5（common 5～8 / uncommon 8～12 / rare 12～20 / epic 20～30）。
 - **阶段系数表（V1 基线）**：阶段二 1.0 / 三 1.3 / 四 1.6 / 五 2.0——随玩家推进商店同步涨价，保证"金币越多东西越贵"的 sink 曲线（common 基价 5～8 → 阶段五实际 10～16，rare 24～40）。系数为基线值，校准期按钱包存量监控调整（§5）。
 - 支付流程：选择商品 → 校验钱包金币（不足回 `NOT_ENOUGH_GOLD`）→ 扣钱包 → `wallet_gold_changed` 事件 → `item_gained` → 入 Inventory → 写档。
 - **购买只入仓库，不校验携带容量**（容量只约束"带进关卡"这一步）；准备档口购物后需在背包编辑态放入槽位；槽位已满时购买不回滚，只在放置时报 `BAG_CAPACITY_EXCEEDED`。

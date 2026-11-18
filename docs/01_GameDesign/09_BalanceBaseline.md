@@ -59,7 +59,20 @@
 | 精英敌人 | 金币 6～10 或道具 ×1 |
 | 资源卡 | 金币 3～8 / 食物 2～3 |
 | 通关奖励 | 金币 5～10 + 按关卡表（rewardConfig） |
-| 商店价格 | 普通道具 5～8 金币，稀有 12～20（收**钱包金币**，16_Shop.md） |
+| 商店价格 | 普通 5～8 / 进阶 8～12 / 稀有 12～20 / 史诗 20～30 金币（收**钱包金币**，16_Shop.md）；**传奇不入店，无价格带** |
+| 刷新费用 | **固定 5 钱包金币/次**（Balance `shop.refreshCost`，不递增）；每日首次免费，广告再免 1 次 |
+| 货架数量 | **固定 5 件/次**（Balance `shop.slotCount`） |
+
+**奖励稀有度权重**（按稀有度抽取道具时使用，未列出的稀有度权重为 0）：
+
+| 稀有度 | 权重 |
+|---|---|
+| common | 60 |
+| uncommon | 30 |
+| rare | 9 |
+| epic | 1 |
+
+> 仅决定"先抽到哪个稀有度"，具体道具仍按 `12_Rewards.md` 的 chance 与权重抽取；`legendary` 权重为 0（固定来源，不进随机池）。商店权重（70/25/4/1）是另一套，两者独立。
 
 **每关局内金币净收入带**（奖励 − 消耗，LevelValidator 按此核查，容差 ±30%；基线值待实测）：
 
@@ -116,3 +129,51 @@
 | evt_shrine | 0.5 | 献祭成本 |
 | evt_merchant | 0 | 交易中性 |
 | mech_lever / mech_lock_door / exit_door | 0 | 进度中性 |
+| enemy_sporeling_01 | 3.0 | ATK2 + HP4×0.25 |
+| enemy_myconid_01 | 3.75 | ATK2 + HP5×0.25 + DEF1×0.5 |
+| enemy_cave_spider_01 | 3.5 | ATK2 + HP6×0.25 |
+| enemy_moss_hound_01 | 4.75 | ATK3 + HP7×0.25 |
+| enemy_drowned_01 | 5.5 | ATK3 + HP8×0.25 + DEF1×0.5 |
+| enemy_grave_warden_01 | 5.5 | ATK2 + HP10×0.25 + DEF2×0.5 |
+| enemy_bone_archer_01 | 5.75 | ATK4 + HP7×0.25 |
+| elite_spore_matriarch | 7.0 | ATK3 + HP14×0.25 + DEF1×0.5 |
+| elite_drowned_knight | 9.0 | ATK4 + HP16×0.25 + DEF2×0.5 |
+| boss_drowned_warden | 8.5 | ATK3 + HP18×0.25 + DEF2×0.5 |
+| enemy_ash_wraith_01 | 6.75 | ATK4 + HP9×0.25 + DEF1×0.5 |
+| enemy_cinder_knight_01 | 8.0 | ATK4 + HP12×0.25 + DEF2×0.5 |
+| enemy_flame_priest_01 | 6.0 | ATK3 + HP10×0.25 + DEF1×0.5 |
+| boss_ashen_colossus | 12.5 | ATK5 + HP24×0.25 + DEF3×0.5 |
+| boss_cinder_witch | 12.0 | ATK6 + HP22×0.25 + DEF1×0.5 |
+| enemy_void_shade_01 | 9.0 | ATK5 + HP14×0.25 + DEF1×0.5 |
+| enemy_star_eater_01 | 11.5 | ATK6 + HP18×0.25 + DEF2×0.5 |
+| enemy_star_crawler_01 | 9.5 | ATK4 + HP16×0.25 + DEF3×0.5 |
+| enemy_lightless_priest_01 | 9.25 | ATK5 + HP15×0.25 + DEF1×0.5 |
+| boss_starless_king | 16.5 | ATK6 + HP36×0.25 + DEF3×0.5 |
+| boss_void_herald | 16.0 | ATK7 + HP32×0.25 + DEF2×0.5 |
+| boss_final_echo | 19.5 | ATK8 + HP40×0.25 + DEF3×0.5 |
+| trap_spore_cloud | 3.5 | 中毒 2 层 + 虚弱 1 回合 |
+| trap_water_pit | 1.5 | 失去 2 食物 |
+| trap_cursed_seal | 3.5 | 2 伤害 + 易伤 1 回合 |
+| res_soul_ember | −1.5 | 高额金币 |
+| res_star_shard | −2.0 | 食物 + 金币双收益 |
+| heal_big_salve / heal_spring | −2.0 | 大额恢复 |
+| eq_silver_blade / eq_scale_mail / eq_grave_ring / eq_warden_cloak | −1.0 | 战力提升减压 |
+| eq_ember_sword | −1.5 | 高阶武器 |
+| eq_hunting_bow / eq_moss_cloak | −1.0 | 战力提升减压 |
+| eq_molten_ring / eq_slag_armor | −1.0 | 战力提升减压 |
+| eq_starfall_blade / eq_starless_pendant | −1.5 | 高阶装备 |
+| eq_assassin_dagger / eq_ember_staff | −1.0 | 战力提升减压 |
+| eq_worlds_end_blade | −3.0 | 传说武器，仅终局钉位 |
+| evt_silent_bell | 0 | 二选一中性 |
+| elite_slag_warden | 10.5 | ATK4 + HP20×0.25 + DEF3×0.5 |
+| elite_cinder_deacon | 10.5 | ATK5 + HP18×0.25 + DEF2×0.5 |
+| elite_star_shard_lord | 13.5 | ATK6 + HP24×0.25 + DEF3×0.5 |
+| elite_lightless_bishop | 12.5 | ATK6 + HP22×0.25 + DEF2×0.5 |
+| trap_ash_mine | 4.0 | 5 点伤害 |
+| trap_ember_storm | 4.5 | 2 伤害 + 灼烧 2 层 |
+| trap_void_rift | 3.0 | 失去 3 食物 + 虚弱 1 回合 |
+| evt_ash_pact | 0.5 | 高成本换攻击 |
+| evt_void_echo | 0 | 二选一中性 |
+| evt_mushroom_ring / evt_drowned_altar / evt_forge | 0.5 | 有成本的中性～微负 |
+| mech_gate_chain / mech_water_valve / mech_seal_switch / mech_mirror | 0 | 进度中性 |
+| spec_reverse_stack / spec_copy_top / spec_lock_stack / spec_scramble_all | 0 | 正负相抵 |

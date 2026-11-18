@@ -2,7 +2,7 @@
 
 > 补全章节。所有直接展示给玩家的文本集中在此，是唯一的文案来源——UI 不允许硬编码文案字符串。卡牌 23 张的说明文案见 01_GameDesign/07_CardCatalog.md，本文覆盖其余全部元素。文案走数据流水线，由 LocalizationValidator 校验非空（06_DataBalance.md 第 2 节）。
 
-## 1. 道具介绍文案（对应 04_Items.md 首批 11 道具）
+## 1. 道具介绍文案（对应 04_Items.md 全量 20 件）
 
 展示位置：道具栏长按 / Tooltip 面板（效果数值由 UI 按配置自动拼接，不写入文案）。
 
@@ -19,6 +19,27 @@
 | key | 古旧钥匙 | 一把沉甸甸的黄铜钥匙，齿痕早已磨损——它一定开过某扇重要的门。 |
 | luck_charm | 幸运护符 | 兔脚与四叶草编成的挂坠。下一份好运，就藏在下一件战利品里。 |
 | item_torch | 火把 | 一小截松脂火把，举起来，黑暗会退后两步。 |
+| item_food_bundle | 干粮袋 | 塞得满满的一袋，背起来沉，心里却踏实。 |
+| item_antidote_plus | 强效解毒剂 | 苦得让人皱眉，但喝下去，血色会慢慢回来。 |
+| item_shield_greater | 强化护盾卷轴 | 更厚的咒文，展开时连风都被挡在外面。 |
+| item_bomb_large | 大型炸弹 | 抱在怀里都得小心，它比看上去重得多。 |
+| item_elixir | 琥珀药剂 | 琥珀色的药液里，有一点微光。 |
+| item_torch_plus | 强化火把 | 火苗更亮，照得见更深的角落。 |
+| item_phoenix_feather | 不死鸟之羽 | 温热的羽毛。它记得怎样从灰里回来。 |
+| item_timeglass | 碎沙漏 | 沙漏裂了，倒流的沙够你喘过这一口气。 |
+| item_void_tonic | 星盐药剂 | 咸得像星盐，喝完却意外地清醒。 |
+| item_iron_skin | 铁皮药剂 | 喝下去，皮肤像蒙了一层旧铁，动作也稳了。 |
+| item_fire_flask | 燃烧瓶 | 瓶口塞着浸油的布。扔出去之前，记得先松手。 |
+| item_war_drum | 战鼓 | 鼓面破了个洞，敲起来却还是让人心里发烫。 |
+| item_iron_will | 铁片护符 | 一块磨得发亮的铁片。握着它，脚步会轻一点。 |
+| item_void_bomb | 陨星炸弹 | 里面装着陨星的碎屑，炸开时没有声音。 |
+| item_second_wind | 回魂香 | 一缕很细的烟。闻过之后，身上的沉重会散掉。 |
+| item_trail_mix | 行军干粮 | 混着坚果和硬面包。嚼得太急，会呛得咳血。 |
+| item_pass_token | 通行令 | 一枚旧铜牌，边缘磨得发亮。有些门认它，不认人。 |
+| item_blood_rage | 血怒药剂 | 喝下去，伤口发烫，手心也跟着发烫。 |
+| item_guard_tonic | 护盾药剂 | 味道很涩，喝完却觉得肩上的重量轻了些。 |
+| item_vigor_root | 巨木根 | 咬起来像木头，但咽下去之后，胸口会慢慢热起来。 |
+| item_eternal_ember | 永恒火种 | 一小簇不肯熄灭的火。它记得你倒下的地方。 |
 
 ## 2. 状态效果文案（对应 02_Player.md 第 2 节）
 
@@ -103,10 +124,56 @@
 
 | key | 文案 | 使用位置 |
 |---|---|---|
-| key:level_0003_objective | 找到出口，离开洞窟。 | level_0003 目标区（06_Levels.md §3.2） |
 | key:tut_tap_card | 点开一张牌，看看是什么。 | 引导第 1 关步骤 1（15_Tutorial.md §7） |
 | key:tut_confirm_card | 再点一次，出发！ | 引导第 1 关步骤 2 |
 | key:tut_watch_resource | 注意资源的变化。 | 引导第 1 关步骤 3 |
+
+**阶段一 20 关名称与目标**（key 规则：`copy_level_XXXX_name` / `copy_level_XXXX_objective`，与 18_LevelProduction.md §10 一一对应）：
+
+| key | 文案 | 使用位置 |
+|---|---|---|
+| key:copy_level_0001_name | 洞口的微光 | level_0001 关卡名 |
+| key:copy_level_0001_objective | 翻开卡牌，找到刻纹石门。 | level_0001 目标区（reachExit） |
+| key:copy_level_0002_name | 鼠影 | level_0002 关卡名 |
+| key:copy_level_0002_objective | 清掉挡路的穴居鼠，再往前走。 | level_0002 目标区（reachExit） |
+| key:copy_level_0003_name | 见底的干粮 | level_0003 关卡名 |
+| key:copy_level_0003_objective | 食物不多，找到出口就好。 | level_0003 目标区（reachExit） |
+| key:copy_level_0004_name | 一小瓶药水 | level_0004 关卡名 |
+| key:copy_level_0004_objective | 带上一瓶药水，别急着喝。 | level_0004 目标区（reachExit） |
+| key:copy_level_0005_name | 刻纹石门 | level_0005 关卡名 |
+| key:copy_level_0005_objective | 拉动拉杆，打开石门。 | level_0005 目标区（flag） |
+| key:copy_level_0006_name | 余烬里的钱袋 | level_0006 关卡名 |
+| key:copy_level_0006_objective | 搜刮钱袋，再决定去留。 | level_0006 目标区（reachExit） |
+| key:copy_level_0007_name | 岔路 | level_0007 关卡名 |
+| key:copy_level_0007_objective | 选一条路，走到尽头。 | level_0007 目标区（reachExit） |
+| key:copy_level_0008_name | 蝙蝠窝 | level_0008 关卡名 |
+| key:copy_level_0008_objective | 别被拖进消耗战。 | level_0008 目标区（reachExit） |
+| key:copy_level_0009_name | 尖刺回廊 | level_0009 关卡名 |
+| key:copy_level_0009_objective | 绕过尖刺，或者硬扛过去。 | level_0009 目标区（reachExit） |
+| key:copy_level_0010_name | 矿脉微光 | level_0010 关卡名 |
+| key:copy_level_0010_objective | 深堆尽头有钻石，量力而行。 | level_0010 目标区（reachExit，矿点） |
+| key:copy_level_0011_name | 疲惫的脚步 | level_0011 关卡名 |
+| key:copy_level_0011_objective | 每一步都要算清食物。 | level_0011 目标区（reachExit） |
+| key:copy_level_0012_name | 哥布林的补给 | level_0012 关卡名 |
+| key:copy_level_0012_objective | 用一场战斗，换几天口粮。 | level_0012 目标区（reachExit） |
+| key:copy_level_0013_name | 愈合的草叶 | level_0013 关卡名 |
+| key:copy_level_0013_objective | 把治疗留到最需要的时候。 | level_0013 目标区（reachExit） |
+| key:copy_level_0014_name | 骸骨的防线 | level_0014 关卡名 |
+| key:copy_level_0014_objective | 击穿防线，抵达出口。 | level_0014 目标区（reachExit） |
+| key:copy_level_0015_name | 篝火前的选择 | level_0015 关卡名 |
+| key:copy_level_0015_objective | 做一个选择，然后继续。 | level_0015 目标区（reachExit） |
+| key:copy_level_0016_name | 钥匙与门 | level_0016 关卡名 |
+| key:copy_level_0016_objective | 带上钥匙，走到石门前。 | level_0016 目标区（collect） |
+| key:copy_level_0017_name | 越过封锁 | level_0017 关卡名 |
+| key:copy_level_0017_objective | 绕开封锁的堆，或者清掉它。 | level_0017 目标区（reachExit） |
+| key:copy_level_0018_name | 谨慎的贪心 | level_0018 关卡名 |
+| key:copy_level_0018_objective | 想清楚什么时候收手。 | level_0018 目标区（reachExit） |
+| key:copy_level_0019_name | 洞口在望 | level_0019 关卡名 |
+| key:copy_level_0019_objective | 带着剩下的资源离开。 | level_0019 目标区（reachExit） |
+| key:copy_level_0020_name | 守门人的试炼 | level_0020 关卡名 |
+| key:copy_level_0020_objective | 击败守门人，带走矿石。 | level_0020 目标区（kill，矿点） |
+| key:copy_level_0480_name | 无声的加冕 | level_0480 关卡名（传说试炼） |
+| key:copy_level_0480_objective | 击败黑纱主教与它的随从，取走终末之刃。 | level_0480 目标区（killAll，传说试炼） |
 
 ## 7. 成长树节点文案（04_MetaProgression.md §8）
 
@@ -145,7 +212,11 @@
 ## 8. 文案管理规则
 
 1. **key 生成规则**：`copy_{元素id}_{字段}`（如 `copy_potion_small_desc`、`copy_err_not_enough_gold`）。§1～§4 表已有 id 列（道具 id / 状态 id / 稀有度 / 错误码），**key 由规则自动推导，表内不重复列 key**；§6、§7 已是 key 直接引用，保持 `key:` 前缀写法。
-2. **导出流水线**：`npm run export:copy` 解析本文表格 → 生成 `assets/resources/data/copy/copy_zh-CN.json`（扁平 `{ key: text }`，外层带 06_DataBalance.md §1 公共字段）。**本文是唯一编辑源**，导出物只读、禁止手改。
+2. **导出流水线**：`npm run export:copy` 解析三类输入并合并 → 生成 `assets/resources/data/copy/copy_zh-CN.json`（扁平 `{ key: text }`，外层带 06_DataBalance.md §1 公共字段）：
+   - **本文**：§1 道具、§2 状态、§4 错误码、§5 系统、§6 关卡与引导、§9 分享、§10 首领（key 由 id 规则推导或表内显式 key）；
+   - **07_CardCatalog.md**：卡牌表（§1～§7、§10～§13）的"名称 + 说明文案"→ `copy_{cardId}_name` / `copy_{cardId}_desc`；
+   - **04_Items.md** §4：道具"名称"列（介绍文案仍以 §1 为准）。
+   三处均为编辑源，导出物只读、禁止手改；同一 id 在多地重复时以本文 §1 为准。
 3. **取值**：文案不写死在组件里，经 `core/i18n` 模块按 key 取值；未命中 key 时开发期显示 key 本身（便于发现漏配），线上显示兜底文案。
 4. **覆盖校验**：LocalizationValidator 反向核查——卡牌/道具/敌人/状态/错误码/关卡 `objective.displayText` 引用的每个 id 都能生成对应 key 且文案非空；新增配置未登记文案 = 校验失败。
 5. **变体 key**：同一错误码的语境变体必须用独立 key（如驻留封锁变体 `copy_err_card_not_actionable_locked`），禁止同一 key 存两套文案。
@@ -174,5 +245,15 @@
 | boss_drowned_warden_enter | 守卫抬起湿透的手臂，苔藓下露出旧伤。 | P1 入场横幅 |
 | boss_drowned_warden_phase2 | 水声倒灌，它开始把伤口长回去。 | P2 阶段切换横幅 |
 | boss_drowned_warden_surge | 水流扯动了脚下的牌堆。 | 潮涌机制预告（1 回合后打乱随机一堆） |
+| boss_ashen_colossus_enter | 灰堆成的高塔动了动，抖落一身火星。 | P1 入场横幅 |
+| boss_ashen_colossus_phase2 | 它裂开的地方透出更亮的光，像还有东西没烧完。 | P2 阶段切换横幅 |
+| boss_cinder_witch_enter | 炉火后面，有人慢慢搅动一锅什么。 | P1 入场横幅 |
+| boss_cinder_witch_phase2 | 她把手伸进火里，火焰顺着袖子爬上来。 | P2 阶段切换横幅 |
+| boss_starless_king_enter | 断冠歪戴在头上，王座后没有影子。 | P1 入场横幅 |
+| boss_starless_king_phase2 | 穹顶压低了，断冠的裂口里透出一点冷光。 | P2 阶段切换横幅 |
+| boss_void_herald_enter | 号角没有声音，影子先到了。 | P1 入场横幅 |
+| boss_void_herald_phase2 | 号声倒着吹，影子开始重复你的脚步。 | P2 阶段切换横幅 |
+| boss_final_echo_enter | 巨像胸口的钟不响，只把脚步声吞进去，再送回来。 | P1 入场横幅 |
+| boss_final_echo_phase2 | 送回来的脚步声，比你自己的脚步更近了一点。 | P2 阶段切换横幅 |
 
 > 后续首领按同一命名规则 `boss_{id}_{enter|phaseN}` 登记；新增首领必须先在本节补文案再进配置（LocalizationValidator 校验）。

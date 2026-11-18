@@ -13,6 +13,7 @@
 | Shield | 护盾值 | 抵消符合规则的伤害 | 0 |
 | Attack | 攻击力 | 战斗伤害 | 1 |
 | Defense | 防御力 | 降低符合规则的伤害 | 0 |
+| Buffs | 临时属性修正列表（`{stat, delta, untilTurn}`） | 装备/事件/技能的限时加成，到期移除；不进入 StatusEffects | [] |
 | Turn | 当前行动次数 | 行动消耗和触发条件 | 0 |
 | Combo | 连击计数 | 连续行动奖励 | 0 |
 | StatusEffects | 状态效果列表 | 中毒、灼烧等 | [] |

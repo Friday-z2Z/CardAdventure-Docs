@@ -64,6 +64,7 @@ interface EnemyRuntime {
   defense: number;
   statuses: StatusEffectInstance[];  // 与玩家同一结构（02_Player.md §2.1）
   flags: Record<string, number>;     // skip_counter / 阶段切换标记等数值型临时标记
+  buffs: { stat: "attack" | "defense" | "maxHp"; delta: number; untilTurn: number }[];  // 临时属性修正（03_ActionQueue.md §3 buff），随快照持久化
   phase: number;                     // 首领阶段索引，非首领恒 0
   alive: boolean;
 }

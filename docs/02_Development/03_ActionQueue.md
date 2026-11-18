@@ -54,18 +54,19 @@ interface Action {
 
 ```ts
 interface EffectDefinition {
-  type: EffectType;        // damage | heal | resource | status | flag | spawnCard | transformStack
+  type: EffectType;        // damage | heal | resource | status | flag | reveal | spawnCard | transformStack | buff
   target: TargetRule;
-  value?: number;          // 主数值：damage/heal 的数值；status 的层数；flag 的布尔/数值
-  valueRange?: { min: number; max: number };  // 数值区间（与 value 互斥，如钱袋 +3～5）；随机走 level 子流，随 actionId 记录
+  value?: number;          // 主数值：damage/heal 数值；status 层数；flag 布尔/数值
+  valueRange?: { min: number; max: number };  // 数值区间（与 value 互斥）；随机走 level 子流，随 actionId 记录
   params?: EffectParams;   // 按 type 的附加参数，见下表
-  consume?: { itemId: string; quantity: number };  // 结算成功后扣库存（如机关门消耗钥匙），失败不扣
+  consume?: { itemId?: string; quantity?: number; slot?: "weapon" | "armor" | "trinket" };  // 结算成功后扣除，失败不扣；itemId 与 slot 二选一
   condition?: ConditionRule;   // 执行前置条件（执行时求值）
-  trigger?: string;            // 被动触发点（如 "on_enemy_died"）；缺省为主动效果，随动作立即执行
+  trigger?: string;            // 被动触发点（词表见下）；缺省为主动效果
   priority: number;            // 同一结算批次内的执行顺序，小者先
-  delay?: number;              // 演出延迟（不影响逻辑，只影响动画排程）
-  cancelable: boolean;         // 是否可被免疫/取消（与数值减免是两层，见下）
+  delay?: number;              // 演出延迟（不影响逻辑）
+  cancelable: boolean;         // 是否可被免疫/取消（与数值减免是两层）
   repeat?: number;             // 重复次数（如灼烧 tick）
+  interval?: number;           // 周期触发间隔（回合），缺省 1；仅周期型 trigger 有效
   stack?: "replace" | "add" | "max";  // 与已有同类效果叠加方式
 }
 
@@ -76,11 +77,17 @@ type ResourceParams = { resource: "hp" | "food" | "gold" | "shield" };
 type StatusParams = { effectId: string; duration: number };
 type FlagParams = { key: string };
 type RevealParams = { count: number };   // 查看暗堆顶部 N 张（不翻开、不触发效果）
-type SpawnCardParams = { cardId: string; stackId?: string; position: "top" };
+type BuffParams = { stat: "attack" | "defense" | "maxHp"; delta: number; duration: number };  // 临时属性修正
+type SpawnCardParams = {
+  cardId?: string;                       // source = "definition" 时必填
+  stackId?: string;
+  position: "top";
+  source?: "definition" | "top";         // "top" = 复制目标堆顶层卡（忽略 cardId）
+};
 type TransformStackParams = { op: "swapTop" | "reverse" | "moveTopToBottom" | "shuffle"; targetStackId?: string };  // 省略 = 作用本堆
 
 type EffectParams = DamageParams | HealParams | ResourceParams | StatusParams
-                  | FlagParams | RevealParams | SpawnCardParams | TransformStackParams;
+                  | FlagParams | RevealParams | BuffParams | SpawnCardParams | TransformStackParams;
 ```
 
 | type | `value` 含义 | `params` 要求 | 备注 |
@@ -91,8 +98,21 @@ type EffectParams = DamageParams | HealParams | ResourceParams | StatusParams
 | status | 层数 | `effectId`、`duration`（回合） | 同名同 id 走叠加规则（02_Player.md §2.2） |
 | flag | 布尔或数值 | `key` | 写 `runFlags`，机关/出口条件读取 |
 | reveal | 张数 | `count` | 只把暗堆顶 N 张标记为 `faceUp` 供查看，**不翻开、不执行、不消耗卡**；查看结果不写入快照之外的持久数据 |
-| spawnCard | — | `cardId`、`stackId`（缺省目标堆）、`position: "top"` | 生成敌人/卡牌到堆顶 |
+| buff | — | `stat`（attack/defense/maxHp）、`delta`、`duration` | 临时属性修正：写入宿主 `buffs`（玩家 `PlayerState.buffs` / 敌人 `EnemyRuntime.buffs`），按 `untilTurn` 到期移除；不写状态列表、不占"同 id 至多一条"；随快照持久化；`maxHp` 修正到期时 HP 必须 clamp 到新的 MaxHP（满足 `0 ≤ HP ≤ MaxHP` 不变式） |
+| spawnCard | — | `cardId`（`source:"definition"` 必填）、`stackId`、`position:"top"`、`source`（缺省 definition；`"top"` = 复制目标堆顶层，忽略 `cardId`，允许该堆临时 +1） | 生成敌人/卡牌到堆顶；复制类卡走 `source:"top"` |
 | transformStack | — | `op`、`targetStackId`（省略 = 本堆） | 改堆序的四类原子操作；`swapTop` 必须指定另一堆，`reverse` / `moveTopToBottom` / `shuffle` 默认作用于本堆 |
+
+**trigger 词表（被动触发点，新增必须先登记本表）**：
+
+| trigger | 触发时机 | 现有使用方 |
+|---|---|---|
+| `on_card_resolved` | 一张卡结算完成 | 破竹（对满血敌人 +1 伤害） |
+| `on_enemy_damaged` | 敌人受到伤害后 | 苔藓猎犬（首次受击攻击 +1） |
+| `on_enemy_died` | 敌人死亡后 | 猎金、墓环 |
+| `on_enemy_attack` | 敌人反击命中玩家后（priority 40 之后） | 孢子幼体、洞穴蛛、影缚蝠 |
+| `on_player_damaged` | 玩家受到伤害后 | 坚壁 |
+| `on_player_died` | 玩家 HP 判定为 0、结算未完成前 | 不死鸟之羽（每关一次，写 `flags.revived`） |
+| `on_turn_end` | 回合结束（priority 50 之后） | 再生、守墓石像、焰祭司（配合 `interval`） |
 
 **减免与取消是两层机制**：`blockedByShield` / `ignoreDefense` 决定**数值**是否被护盾与防御削减；`cancelable` 决定效果能否被**免疫/取消**（如 `poison_cure` 清毒、烟雾弹跳过反击）。陷阱默认 `blockedByShield: true`、`ignoreDefense: false`。
 

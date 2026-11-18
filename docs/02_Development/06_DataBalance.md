@@ -28,10 +28,10 @@
 
 | 验证器 | 检查内容 |
 |---|---|
-| CardValidator | 引用的效果/目标/成本定义存在；baseValue 范围合法；tags 有效 |
+| CardValidator | 引用的效果/目标/成本定义存在；baseValue 范围合法；tags 有效；效果 `type` / `params` / `trigger` 必须在 03_ActionQueue.md §3 的词汇表与参数表内（未登记即失败）；`legendary` 仅允许固定来源（首领钉位/成就）且必须带唯一词条，**不得出现在随机卡池**（03_Cards.md §2） |
 | EnemyValidator | HP > 0、攻击 ≥ 0、奖励字段非负；特殊效果可解析 |
-| ItemValidator | 效果定义存在；maxStack ≥ 1；unlockLevel ≤ 500 |
-| LevelValidator | 出口存在；卡牌 ID 有效；道具已解锁或不作隐性必需；通关条件可满足；matrix5 占格/堆数 ≤20；depth 三档归属、浅堆占比 ≥40%、梯度 ≥1.5 且差 ≥3；`composition` 权重 >0、`fixedCards.index < depth` 且不重复；每堆尾部 `max(2, ceil(depth×0.3))` 张属于 `highValuePool`；DIFF 落阶段目标带（06_Levels.md §3.1.2）；evt_merchant 金源可达；开局构筑白名单不含进度类道具（key 等，04_MetaProgression.md §8）；两端模拟（零/满解锁）均可解（06_Levels.md §5.1） |
+| ItemValidator | 效果定义存在；maxStack ≥ 1；unlockLevel ≤ 500；`legendary` 仅允许固定来源（成就），不得进商店池与随机奖励池；price 落在该稀有度区间（5～8 / 8～12 / 12～20 / 20～30，传奇无价格） |
+| LevelValidator | 出口存在；卡牌 ID 有效；道具已解锁或不作隐性必需；通关条件可满足；matrix5 占格/堆数 ≤20；depth 三档归属、浅堆占比 ≥40%、梯度 ≥1.5 且差 ≥3；`composition` 权重 >0、`fixedCards.index < depth` 且不重复；每堆尾部 `max(2, ceil(depth×0.3))` 张属于 `highValuePool`；DIFF 落阶段目标带（06_Levels.md §3.1.2）；evt_merchant 金源可达；开局构筑白名单不含进度类道具（key 等，04_MetaProgression.md §8）；两端模拟（零/满解锁）均可解（06_Levels.md §5.1）；全关装备卡 ≥1（阶段三起 ≥2）且同槽位 ≤1 |
 | ConfigValidator | 公共字段齐全；id 唯一；无重复资源引用；覆盖未单设验证器的配置（shop_offers / sign_rewards / tutorial_steps / copy），校验引用 id 存在、CopyDeck key 已登记、数值范围合法 |
 | AssetValidator | 配置引用的图片/音频文件存在且命名合规（总规格书 8.8） |
 | LocalizationValidator | 名称、描述字段非空；无未翻译占位符 |
@@ -65,7 +65,7 @@ balance.xlsx（或 balance.ts 表）
 
 **数值唯一真源**：
 
-- `balance/balance.xlsx` 是唯一可编辑源（sheet：player / costs / limits / enemies / cards / items / status / combo / difficulty / shop / merchant / sign / mine / rewards；`threat` 是 enemies 与 cards 的列，不单设 sheet）。
+- `balance/balance.xlsx` 是唯一可编辑源（sheet：player / costs / limits / enemies / cards / items / status / combo / difficulty / shop / merchant / achievements / sign / mine / rewards；`threat` 是 enemies 与 cards 的列，不单设 sheet）。
 - `assets/resources/data/**` 的 JSON 是导出产物，**禁止手改**；`docs/` 内的数值表（07_CardCatalog、09_BalanceBaseline、02_Player §2.2）是**只读展示副本**——改值只改 Balance 后重新导出，并同步刷新展示表。
 
 **结构与数值的合并边界**（B1 导出脚本按此实现）：手写 JSON 只写**结构与引用**（`cardIds`、`composition[].cardId`、`effects`、`tags`、`cell` 等），数值字段（hp/attack/defense/baseValue/price/threat/maxStack…）一律由 `export:balance` 注入；模板中数值留空即表示待注入，Validator 不视为错误。
@@ -83,11 +83,12 @@ balance.xlsx（或 balance.ts 表）
 | items | itemId | rarity / maxStack / cooldown / price / useType / overflowGoldRate |
 | combo | tier | gold / food / itemChance |
 | difficulty | key | stackWeight / depthWeight / revealWeight / threatWeight / bandStage1～5 / bossBonus / teachCap |
-| shop | key | basePrice / stageMultiplier / refreshCosts / rareWeight / dailyFreeRefresh |
+| shop | key | basePrice / stageMultiplier / refreshCost / slotCount / rareWeight / epicWeight / dailyFreeRefresh |
 | merchant | itemId | basePrice / weight / minStage |
 | sign | day | rewardType / rewardId / amount |
 | mine | stage | diamondPerClear / dailyLimit |
 | rewards | key | replayTransferRatio / adDoubleMultiplier / rareChanceCap |
+| achievements | id | diamond / itemId / itemQty / trigger；diamond = 0 表示仅记录（图鉴/称号），itemId 留空表示无道具 |
 
 - 列名必须与 TS 字段一致；留空 = 取代码默认值；新增行必须带公共字段（version/updatedAt/author）；导出脚本对未知列报错、对缺列告警。
 
@@ -97,7 +98,7 @@ balance.xlsx（或 balance.ts 表）
 |---|---|---|
 | `npm run export:balance` | `balance/balance.xlsx` | 写 `assets/resources/data/{cards,items,enemies,balance}/`；成功后自动跑 validate；失败非 0 退出 |
 | `npm run validate` | `assets/resources/data/**` 与 CopyDeck 导出物 | 逐条 `[Validator] <file>: <message>`，`--json` 出机器可读；全通过 0，否则 1 |
-| `npm run export:copy` | `docs/03_UI/02_CopyDeck.md` | 写 `assets/resources/data/copy/copy_zh-CN.json`（扁平 key→text + 公共字段，见 02_CopyDeck.md §8） |
+| `npm run export:copy` | `02_CopyDeck.md` + `07_CardCatalog.md` 卡牌表 + `04_Items.md` 名称列 | 写 `assets/resources/data/copy/copy_zh-CN.json`（扁平 key→text + 公共字段，见 02_CopyDeck.md §8） |
 | `npm run check:licenses` | `manifest.json` + `licenses.csv` | 每个资源必须有已审计 license 记录；缺失即 1 |
 | `npm test` | `tests/**` | Vitest，Node 环境，不依赖引擎 |
 

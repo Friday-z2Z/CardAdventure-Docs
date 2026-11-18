@@ -187,7 +187,7 @@
 
 | ID | 决策 | 状态 | 来源 |
 |---|---|---|---|
-| D-144 | 装备词条：common 1 / uncommon 2 / rare 3 条；**饰品跨关保留 1 件**（`ProgressData.equippedTrinket`），武器护甲仍关末消失 | 冻结 | 03_Cards.md D 节、11_Resources.md §3 |
+| D-144 | 装备词条：common 1 / uncommon 2 / ~~rare 3~~；**饰品跨关保留 1 件**（`ProgressData.equippedTrinket`），武器护甲仍关末消失 | **部分废止**（词条数被 D-164 改为 rare 2；跨关部分仍有效） | 03_Cards.md D 节、11_Resources.md §3 |
 | D-145 | 深堆价值梯度：每堆尾部 `max(2, ceil(depth×0.3))` 张必须来自 `highValuePool` | 冻结 | 06_Levels.md §3 |
 | D-146 | 首领机制池新增"盘面干扰"；沉水守卫 P2 改为再生 + 潮涌（每 3 回合 shuffle 一堆，提前 1 回合预告） | 基线 | 14_EliteBoss.md §1～§2 |
 | D-147 | 食物不足惩罚：首次 −2 HP、之后每次 −1 HP（原为每次 −2） | 基线 | 01_CoreLoop.md §4、09_BalanceBaseline.md §3 |
@@ -199,7 +199,126 @@
 | D-153 | 新增赌性事件卡"诅咒宝箱"（+8 金币、中毒 2 层，可放弃） | 基线 | 07_CardCatalog.md §6 |
 | D-154 | 每日种子挑战、失败复盘登记为 TBD-32 / TBD-33（V1.1 与上线后） | 暂缓 | 02_TbdRegister.md §1 |
 
-## 14. 维护方式
+## 14. 全量卡池与道具（2026-11-18）
+
+| ID | 决策 | 状态 | 来源 |
+|---|---|---|---|
+| D-155 | 全旅程卡池 **66 张** = 阶段一 23 + 扩展 43（二 6 / 三 16 / 四 16 / 五 5）；首领数值按该阶段普通上限 ×1.5 | 基线 | 03_Cards.md §4～§5、07_CardCatalog.md §9 |
+| D-156 | 道具全量 **20 件**（一 11 / 二 3 / 三 3 / 四 2 / 五 1）；商店可售 17、可携带 19 | 基线 | 04_Items.md §4、16_Shop.md §2 |
+| D-157 | 07 §9 数量修正为 +43 / 66 张；阶段二～五说明文案随 TBD-06 登记，未登记不得进配置 | 冻结 | 07_CardCatalog.md §9 |
+| D-158 | 扩展卡所需 8 项效果/触发能力（TBD-34）：先登记 `03_ActionQueue.md` §3 词汇表并实现，扩展卡才允许进配置 | 冻结 | 03_Cards.md §5.1 |
+
+## 15. TBD-34 扩展契约（2026-11-18）
+
+| ID | 决策 | 状态 | 来源 |
+|---|---|---|---|
+| D-159 | 扩展卡 8 项能力定稿并写入词汇表（buff / on_enemy_attack / shieldAtLeast / interval / consume.slot / lockedUntilTurn / spawnCard.source / on_player_died）；**不阻塞 MVP**，分 M-D（5 项）与阶段四前（3 项）两批实现 | 冻结 | 03_ActionQueue.md §3、03_Cards.md §5.1 |
+| D-160 | TBD-34 拆分：TBD-34 前 5 项（M-D）、TBD-34b 后 3 项（阶段四前），MVP/B2 不做扩展实现 | 冻结 | 02_TbdRegister.md §1 |
+
+## 16. 文案与首领预告（2026-11-18）
+
+| ID | 决策 | 状态 | 来源 |
+|---|---|---|---|
+| D-161 | 43 张扩展卡的玩家可见说明文案登记入 07 §10～§13（与 03 §5 结构一一对应） | 冻结 | 07_CardCatalog.md §10～§13 |
+| D-162 | 5 个新首领的 `announce` 文案登记（enter / phase2 各 1），命名规则 `boss_{id}_enter` 与 `boss_{id}_phaseN` | 冻结 | 02_CopyDeck.md §10 |
+
+## 17. 文案导出输入（2026-11-18）
+
+| ID | 决策 | 状态 | 来源 |
+|---|---|---|---|
+| D-163 | `export:copy` 输入扩为三处：CopyDeck（道具/状态/错误码/系统/分享/首领）+ 07 卡牌表（名称与说明）+ 04_Items 名称列；key 规则 `copy_{cardId}_name` / `copy_{cardId}_desc` | 冻结 | 02_CopyDeck.md §8、06_DataBalance.md §3 |
+
+## 18. 装备词条修订（2026-11-18）
+
+| ID | 决策 | 状态 | 来源 |
+|---|---|---|---|
+| D-164 | 装备词条数改为 **common 1 / uncommon 2 / rare 2**；rare 用强化版词条（如坚壁 −2）而非堆数量。5 件 rare 补齐第二条：银刃 +猎金、鳞甲 +守势、墓环 +回春、烬火剑 +猎金、守望披风 +守势 | 冻结 | 03_Cards.md §3-D、§5 |
+
+## 19. 装备进池配额（2026-11-18）
+
+| ID | 决策 | 状态 | 来源 |
+|---|---|---|---|
+| D-165 | 全关卡池装备卡 **≥1 张**（阶段三起 ≥2 张），同一槽位 ≤1；钉位装备计入配额；Validator 与生成器规格同步校验 | 冻结 | 06_Levels.md §3、18_LevelProduction.md §11 |
+
+## 20. 关卡文案（2026-11-18）
+
+| ID | 决策 | 状态 | 来源 |
+|---|---|---|---|
+| D-166 | 阶段一 20 关登记关卡名与目标文案，key 规则 `copy_level_XXXX_name` / `copy_level_XXXX_objective`；样例与模板同步替换 `key:` 引用 | 冻结 | 02_CopyDeck.md §6、06_Levels.md §3、18_LevelProduction.md §10 |
+
+## 21. 内容密度补足（2026-11-18）
+
+| ID | 决策 | 状态 | 来源 |
+|---|---|---|---|
+| D-167 | 装备补至 14 件（阶段二 +2、四 +2、五 +2）；新增词条「反震」「坚韧」，epic 装备 3 条词条 | 基线 | 03_Cards.md §3-D、§5 |
+| D-168 | 道具补至 26 件（阶段三 +1、四 +3、五 +2）；商店可售 22、可携带 25 | 基线 | 04_Items.md §4、16_Shop.md §2 |
+| D-169 | 阶段五补 2 个普通敌人 + 1 个事件，普通敌人达 4 种；全卡池 66 → 75 张 | 基线 | 03_Cards.md §5、07_CardCatalog.md §9 |
+| D-170 | 新增「阶段内容预算」表（18 §12）并纳入 `check-doc-refs.mjs` 校验；生产清单加第 21 条 | 冻结 | 18_LevelProduction.md §12、scripts/check-doc-refs.mjs |
+
+## 22. 精英/陷阱补足（2026-11-18）
+
+| ID | 决策 | 状态 | 来源 |
+|---|---|---|---|
+| D-171 | 精英 +4：阶段四熔渣守卫、烬火执事；阶段五星甲巨卫、黑纱主教 | 基线 | 03_Cards.md §5 |
+| D-172 | 陷阱 +3（灰烬地雷、火星喷口、地裂口）、事件 +2（灰烬契约、回音石碑）；卡池 75 → 84 | 基线 | 03_Cards.md §5、07_CardCatalog.md §9 |
+| D-173 | 阶段内容预算增加「精英」「陷阱」两列（合计下限 6 / 8），脚本密度检查同步 | 冻结 | 18_LevelProduction.md §12、scripts/check-doc-refs.mjs |
+
+## 23. 内容差异化（2026-11-18）
+
+| ID | 决策 | 状态 | 来源 |
+|---|---|---|---|
+| D-174 | 道具 26 → 31：新增通行令（flag 出口）、血怒药剂（攻 +2 换中毒）、行军干粮（食物换血）、护盾药剂（防御 buff）、巨木根（MaxHP buff）——全部用现有效果词汇，不新增类型 | 基线 | 04_Items.md §4 |
+| D-175 | 装备 14 → 16：刺客匕首（乘胜 + 猎金）、烬火法杖（破竹 + 乘胜）；新增词条「乘胜」；卡池 84 → 86 | 基线 | 03_Cards.md §3-D、§5 |
+
+## 24. 商店稀有度重排（2026-11-18）
+
+| ID | 决策 | 状态 | 来源 |
+|---|---|---|---|
+| D-176 | 战鼓、铁片护符、强化火把由 rare 降为 uncommon；价格区间补 uncommon 8～12；可售满池分布定为 common 5 / uncommon 11 / rare 9 / epic 2，单件 rare ≈0.56%/槽；M-C 按 TBD-35 复核 | **部分废止**（权重与单件概率被 D-177 取代：rare 4% / epic 1%） | 04_Items.md §4、16_Shop.md §2～§3、09_BalanceBaseline.md §5 |
+
+## 25. 稀有度语义（2026-11-18）
+
+| ID | 决策 | 状态 | 来源 |
+|---|---|---|---|
+| D-177 | `legendary` 预留但 V1 禁止配置（Card/Item Validator 拦截）；非装备卡 rarity 仅用于展示/图鉴/奖励权重，不影响数值；epic 入店 1%（rare 5%→4%）并补价格带 20～30；奖励稀有度权重 60/30/9/1 | **部分废止**（legendary 启用，禁配条款被 D-178 取代） | 03_Cards.md §2、16_Shop.md §2～§3、09_BalanceBaseline.md §5 |
+| D-178 | **传奇启用**（固定来源制）：`eq_worlds_end_blade` 终末之刃（legendary 武器，仅 level_0500 钉位）；`item_eternal_ember` 永恒火种（legendary 被动，`ach_clear_500` 发放）；legendary 3 条词条 + 1 条唯一词条，不入商店与随机池，无价格带 | **部分废止**（火种被 D-179、终末之刃钉位被 D-180 取代） | 03_Cards.md §2～§3、04_Items.md §4、04_MetaProgression.md §7、18_LevelProduction.md §9 |
+| D-179 | 火种改为**一次性消耗品**（使用后本关首次致死复活 50%，触发即消耗），来源改为 `ach_stage4_clear`（通关 320）；`ach_clear_500` 只发钻石与图鉴记录——通关后再发消耗品无使用场景 | **部分废止**（500 关成就的钻石被 D-180 取消） | 04_Items.md §4、04_MetaProgression.md §7 |
+| D-180 | 终末之刃钉位扩为 `level_0480`（传说试炼）与 `level_0500` 两关；`ach_clear_500` 只发图鉴记录与称号，不发道具与钻石——通关后无使用/消费场景 | 冻结 | 03_Cards.md §5、18_LevelProduction.md §9、04_MetaProgression.md §7 |
+
+## 26. level_0480 与成就导出（2026-11-18）
+
+| ID | 决策 | 状态 | 来源 |
+|---|---|---|---|
+| D-181 | `level_0480` 定为阶段五"传说试炼"展示关：12 堆 / 4 dark / 4 敌 killAll / 2 陷阱 / Food 12 / DIFF 78；终末之刃钉位 index 8（12 食物可及），压力放在食物与陷阱而非敌人血量 | 基线 | 18_LevelProduction.md §13 |
+| D-182 | 成就奖励数值化：`ach_clear_500.diamond = 0` 表示仅记录（非占位符）；Balance 新增 `achievements` sheet（`diamond / itemId / itemQty / trigger`） | 冻结 | 04_MetaProgression.md §7、06_DataBalance.md §3 |
+
+## 27. 命名规范（2026-11-18）
+
+| ID | 决策 | 状态 | 来源 |
+|---|---|---|---|
+| D-183 | 卡牌与道具名称统一为「材质 / 形态 + 具体物件或生物」，禁止纯抽象概念型命名；27 个名称重命名（ID 不变），玩家可见文案同步改写 | 冻结 | 07_CardCatalog.md §9 |
+| D-184 | 修正 03 §5 / 07 §10～§13 的阶段标题计数为 8 / 17 / 24 / 15，与 87 张卡池一致 | 冻结 | 03_Cards.md §5、07_CardCatalog.md §10～§13 |
+
+## 28. 商店刷新定价（2026-11-18）
+
+| ID | 决策 | 状态 | 来源 |
+|---|---|---|---|
+| D-185 | 商店刷新由递增 2/4/8… 改为**固定 5 钱包金币/次**（Balance `shop.refreshCost`，不递增）；每日首次免费、广告再免 1 次保持不变；`refreshCount` 仍递增以换货架 | 冻结 | 16_Shop.md §2、09_BalanceBaseline.md §5 |
+
+## 29. 商店货架数量（2026-11-18）
+
+| ID | 决策 | 状态 | 来源 |
+|---|---|---|---|
+| D-186 | 商店货架由 4～6 件改为**固定 5 件/次**（Balance `shop.slotCount`）；单件 rare/epic 出现概率按 5 槽重算为约 2.2% / 2.5% | 冻结 | 16_Shop.md §2、09_BalanceBaseline.md §5 |
+
+## 30. 全量审计补丁（2026-11-18）
+
+| ID | 决策 | 状态 | 来源 |
+|---|---|---|---|
+| D-187 | CopyDeck §6 重复的 `key:copy_level_0003_objective` 删除，保留阶段一 20 关表中的唯一条目；`check-doc-refs.mjs` 新增 CopyDeck key 唯一检查 | 冻结 | 02_CopyDeck.md §6、scripts/check-doc-refs.mjs |
+| D-188 | `item_eternal_ember.useType = "instant"`（使用后写入本关致死免疫标记并消耗），不是 passive | 冻结 | 04_Items.md §4 |
+
+## 31. 维护方式
 
 1. 新增决策：取当前最大编号 +1 顺延（按 00x 项目 / 01x～02x 玩法 / 03x 经济 / 05x 工程 / 07x 文档 分段，跨段不保证连续），先登记后改正文。
 2. 推翻决策：原行状态改"已废止（被 D-xxx 取代）"，新行写新结论与原因。

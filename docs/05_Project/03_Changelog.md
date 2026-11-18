@@ -25,6 +25,48 @@
 
 | docs-r13 | 玩法 | A/B/C 组优化：装备词条与饰品跨关、深堆价值梯度、Boss 盘面机制、食物惩罚软化、连击阈值、火把侦察、换开局、节奏规则、HUD 渐进披露、诅咒宝箱；D 组登记 TBD-32/33 | 03_Cards、06_Levels、14_EliteBoss、05_Combo、01_CoreLoop、11_Resources、09_BalanceBaseline、04_Items、16_Shop、07_CardCatalog、15_Tutorial、03_Screens、02_CopyDeck、10_CodingStandards、02_StateMachine、06_DataBalance、18_LevelProduction |
 
+| docs-r14 | 文档 | 03_Cards 新增"首批 23 张卡牌清单"结构索引（数值与文案仍以 07 为准） | 03_Cards、00_Index |
+
+| docs-r15 | 内容 | 全旅程卡池 66 张（新增 43 张逐张效果与 threat）与道具全量 20 件；商店货池与计数同步 | 03_Cards、07_CardCatalog、09_BalanceBaseline、04_Items、16_Shop、04_MetaProgression、02_CopyDeck、00_Index |
+
+| docs-r16 | 工程 | TBD-34 定稿：8 项扩展写入 `EffectDefinition`（buff / interval / consume.slot / spawnCard.source）与 trigger 词表（on_enemy_attack / on_player_died）；拆为 TBD-34（M-D）与 TBD-34b（阶段四前），明确不阻塞 MVP | 03_ActionQueue、03_Cards、11_Testing、02_TbdRegister、00_DecisionLog、00_Index |
+
+| docs-r17 | 文案 | 补齐阶段二～五 43 张卡说明文案（07 §10～§13）与 5 个新首领 announce（CopyDeck §10）；TBD-06 输入齐备 | 07_CardCatalog、02_CopyDeck、02_TbdRegister、00_DecisionLog |
+
+| docs-r18 | 文案 | 修正导出契约：`export:copy` 输入扩为 CopyDeck + 07 卡牌表 + 04_Items 名称列，卡牌 key 规则补齐 | 02_CopyDeck、06_DataBalance、00_DecisionLog |
+
+| docs-r19 | 平衡 | 装备词条数改 common 1 / uncommon 2 / rare 2（rare 允许强化版词条）；5 件 rare 各补第二条词条 | 03_Cards、11_Testing、00_DecisionLog |
+
+| docs-r20 | 关卡 | 新增装备进池配额：全关 ≥1（阶段三起 ≥2）、同槽 ≤1、钉位计入；Validator 与生成器规格同步 | 06_Levels、18_LevelProduction、06_DataBalance、11_Testing、00_DecisionLog |
+
+| docs-r21 | 文案 | 登记阶段一 20 关关卡名与目标文案（40 条 key），关卡样例与模板改用 `key:copy_level_XXXX_*` | 02_CopyDeck、06_Levels、18_LevelProduction、11_Testing、00_DecisionLog |
+
+| docs-r22 | 内容 | 装备 8→14、道具 20→26、阶段五敌人 +2 与事件 +1（卡池 66→75）；新增 18 §12 内容预算表与脚本密度校验 | 03_Cards、07_CardCatalog、09_BalanceBaseline、04_Items、16_Shop、04_MetaProgression、02_CopyDeck、18_LevelProduction、11_Testing、scripts/check-doc-refs、00_DecisionLog |
+
+| docs-r23 | 内容 | 补 4 精英、3 陷阱、2 事件（卡池 75→84）；预算表加精英/陷阱列，脚本密度检查同步 | 03_Cards、07_CardCatalog、09_BalanceBaseline、18_LevelProduction、scripts/check-doc-refs、00_DecisionLog |
+
+| docs-r24 | 内容 | 道具 26→31（规则型/风险型 5 件）、装备 14→16（匕首/法杖）、词条 +乘胜；卡池 84→86 | 03_Cards、04_Items、07_CardCatalog、09_BalanceBaseline、16_Shop、04_MetaProgression、02_CopyDeck、00_DecisionLog |
+
+| docs-r25 | 平衡 | 3 件 rare 降 uncommon（战鼓/铁片护符/强化火把），补 uncommon 价格区间 8～12；可售分布 5/11/9/2；登记 TBD-35 | 04_Items、16_Shop、09_BalanceBaseline、02_TbdRegister、00_DecisionLog |
+
+| docs-r26 | 平衡 | 稀有度语义定稿：legendary 预留禁配、非装备卡 rarity 仅展示、epic 入店 1% 并补价格带、奖励权重 60/30/9/1 | 03_Cards、16_Shop、09_BalanceBaseline、06_DataBalance、11_Testing、02_TbdRegister、00_DecisionLog |
+
+| docs-r27 | 内容 | 传奇启用（固定来源）：终末之刃（level_0500 钉位）、永恒火种（ach_clear_500）；卡池 87、道具 32；传奇不入店/随机池 | 03_Cards、04_Items、07_CardCatalog、09_BalanceBaseline、16_Shop、04_MetaProgression、18_LevelProduction、02_CopyDeck、06_DataBalance、11_Testing、00_DecisionLog |
+
+| docs-r28 | 修正 | 火种来源从通关 500 关改为通关 320 关，形态改为一次性消耗品；500 关成就只发钻石 | 04_Items、04_MetaProgression、11_Testing、00_DecisionLog |
+
+| docs-r29 | 修正 | 终末之刃钉位扩为 480/500 两关（新增传说试炼固定关）；500 关成就改为只发图鉴记录与称号，不发钻石与道具 | 03_Cards、18_LevelProduction、04_MetaProgression、11_Testing、00_DecisionLog |
+
+| docs-r30 | 关卡 | 补 level_0480 完整设计（展示关、钉位与平衡口径）；成就表改为数值 0 并新增 Balance `achievements` sheet | 18_LevelProduction、02_CopyDeck、04_MetaProgression、06_DataBalance、11_Testing、00_DecisionLog |
+
+| docs-r31 | 文案 | 命名审计：27 个卡牌/道具改为具体名词（如影号手/丧钟巨像/回音石碑/铁片护符），文案同步；修正阶段表标题计数 | 03_Cards、07_CardCatalog、04_Items、02_CopyDeck、16_Shop、18_LevelProduction、00_DecisionLog |
+
+| docs-r32 | 经济 | 商店刷新改为固定 5 金币/次（取消 2/4/8 递增）；Balance `shop.refreshCost` 与测试同步 | 16_Shop、09_BalanceBaseline、06_DataBalance、11_Testing、00_DecisionLog |
+
+| docs-r33 | 经济 | 商店货架固定 5 件/次，刷新概率按 5 槽重算；Balance `shop.slotCount` 与测试同步 | 16_Shop、09_BalanceBaseline、06_DataBalance、11_Testing、00_DecisionLog |
+
+| docs-r34 | 审计 | 删除重复的关卡目标 key、脚本新增 key 唯一检查；明确永恒火种 useType=instant | 02_CopyDeck、scripts/check-doc-refs、04_Items、00_DecisionLog |
+
 ## 待发布
 
 | 目标版本 | 计划内容 |

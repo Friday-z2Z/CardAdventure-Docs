@@ -68,6 +68,8 @@ interface StackConfig {
 
 **堆内价值梯度（2026-11-18）**：每堆**最后 `max(2, ceil(depth × 0.3))` 张**（靠近堆底）必须来自高价值池，让"啃深堆"有确定回报。高价值池（Balance `highValuePool`，可随阶段扩充）：`res_treasure`、`heal_salve`、`eq_*`（装备）、`exit_door`、`mech_*`、`evt_shrine`、`spec_*`。浅堆同样至少保底 2 张；`fixedCards` 钉位优先并计入本规则。因此每堆 `composition` 必须至少含 1 张高价值卡（或由钉位提供），纯低价值组合直接打回。
 
+**装备配额（2026-11-18）**：全关卡池（所有堆 `composition` 与 `fixedCards` 的并集）必须至少含 **1 张装备卡**；阶段三起至少 **2 张**。同一槽位（武器/护甲/饰品）在同一关最多 1 张，避免同槽互斥导致空抽。装备按普通权重参与抽卡、不额外提权；固定关可用钉位覆盖配额。
+
 ```ts
 interface LevelObjective {
   type: "reachExit" | "killAll" | "surviveTurns";
@@ -231,7 +233,7 @@ C 卡池威胁因子 = clamp(0, 1, (Σ(weight × threat) / Σweight) / 10)
   ],
   "objective": {
     "type": "reachExit",
-    "displayText": "key:level_0003_objective"
+    "displayText": "key:copy_level_0003_objective"
   },
   "exitRules": [
     { "type": "flag", "flagKey": "door_opened" }
@@ -251,7 +253,7 @@ C 卡池威胁因子 = clamp(0, 1, (Σ(weight × threat) / Σweight) / 10)
 
 样例说明：
 
-1. `objective.displayText` 走 CopyDeck key（`key:` 前缀），玩家可见文案不内联（编码硬规范 5）。
+1. `objective.displayText` 走 CopyDeck key（`key:` 前缀），命名规则 `copy_level_XXXX_name` / `copy_level_XXXX_objective`；玩家可见文案不内联（编码硬规范 5）。
 2. 拉杆（index 4）在出口（index 9）之前，保证 flag 型出口可达（13_Exit.md §4 机关配合）；三堆 depth 3/8/10 为 §3.1.1 三档混合示例（浅 3 / 中 8 / 深 10，深档堆钉出口）。
 3. 起始数值取 09_BalanceBaseline.md 第 2 节基线；奖励区间取第 5 节通关奖励带。
 4. 本样例随 06_DataBalance.md 的 LevelValidator 一同进入 `npm run validate` 校验范围。
