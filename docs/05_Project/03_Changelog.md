@@ -17,6 +17,14 @@
 | docs-r8 | 结构 | `EnemyDefinition`、`EffectDefinition` 参数与 `consume`、净收入带、surviveTurns、复活语义、limits、分享文案、关卡生产手册 | 03_Cards、03_ActionQueue、09_BalanceBaseline、06_Levels、13_Exit、01_Monetization、02_CopyDeck、05_Share、18_LevelProduction |
 | docs-r9 | 数据/工程 | 敌人卡 `enemyId`、数值区间、JSON 与 Balance 合并边界、`cardIds` 重命名、services 接口签名、护盾/状态时长/疲劳口径、结算页互斥、BagMode、组件常量、版本与 CI 基线、存档体积上限 | 03_Cards、03_ActionQueue、06_DataBalance、00_Architecture、11_Resources、02_Player、13_Exit、04_EventCatalog、03_Screens、10_CodingStandards |
 
+| docs-r10 | 流程 | TBD 表重构：拆待办/外部依赖/已定三区，补依赖与关闭判据；关闭 9 项、合并 4 组、截止调整 4 项 | 05_Project/02_TbdRegister、14_EliteBoss、07_CardCatalog、04_MetaProgression、12_Delivery_Risk、08_Roadmap、00_Index |
+
+| docs-r11 | 内容 | TBD-01/03/04 定稿：商人货单、特殊机制最小卡、首个首领；TBD-06 完成批次计划与阶段一 20 关清单 | 07_CardCatalog、03_ActionQueue、03_Screens、14_EliteBoss、02_CopyDeck、18_LevelProduction、06_Levels、11_Testing |
+
+| docs-r12 | 运行期 | 字体方案、画质三档、主包预算表、更新策略、云开发集合/清理/告警、经济与平衡离线校准口径、复活验收 | 00_UiSpec、05_Performance、10_CodingStandards、03_Packaging、07_Ops_Release、16_Shop、01_Monetization、06_Levels、12_Delivery_Risk、11_Testing |
+
+| docs-r13 | 玩法 | A/B/C 组优化：装备词条与饰品跨关、深堆价值梯度、Boss 盘面机制、食物惩罚软化、连击阈值、火把侦察、换开局、节奏规则、HUD 渐进披露、诅咒宝箱；D 组登记 TBD-32/33 | 03_Cards、06_Levels、14_EliteBoss、05_Combo、01_CoreLoop、11_Resources、09_BalanceBaseline、04_Items、16_Shop、07_CardCatalog、15_Tutorial、03_Screens、02_CopyDeck、10_CodingStandards、02_StateMachine、06_DataBalance、18_LevelProduction |
+
 ## 待发布
 
 | 目标版本 | 计划内容 |

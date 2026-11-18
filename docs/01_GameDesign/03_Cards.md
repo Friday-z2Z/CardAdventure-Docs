@@ -41,7 +41,7 @@ type CardType = "enemy" | "resource" | "healing" | "equipment" | "item"
 type CardRarity = "common" | "uncommon" | "rare" | "epic" | "legendary";
 
 type EffectType = "damage" | "heal" | "resource" | "status" | "flag"
-                | "spawnCard" | "transformStack";
+                | "spawnCard" | "transformStack" | "reveal";
 
 type TargetRule =
   | "self"              // 玩家自身
@@ -153,7 +153,22 @@ interface EquipmentDefinition {
 }
 ```
 
-规则：相同槽位只能装一件；替换时先移除旧属性再应用新属性；属性不重复累计；存档只存装备 ID，派生属性由装备系统重算。**替换入口只有一个**——翻到同槽位新装备卡时自动替换；装备槽点击只弹 Tooltip，不支持主动卸下或空手切换（避免把"换装"变成无成本操作）。装备**不入背包**（Inventory 只存道具）——局内临时资源，关末消失（11_Resources.md §3；展示位见 03_UI/03_Screens.md 2.1 装备槽）。
+规则：相同槽位只能装一件；替换时先移除旧属性再应用新属性；属性不重复累计；存档只存装备 ID，派生属性由装备系统重算。**替换入口只有一个**——翻到同槽位新装备卡时自动替换；装备槽点击只弹 Tooltip，不支持主动卸下或空手切换（避免把"换装"变成无成本操作）。
+
+**词条（affix）规则（2026-11-18）**：装备被动按稀有度给词条数——common 1 条、uncommon 2 条、rare 3 条；全部走 `passiveEffects`（`trigger` 声明触发点），不新增系统。首批词条池：
+
+| 词条 | 效果 | 可用槽位 |
+|---|---|---|
+| 攻势 | 攻击 +1 | 武器 / 饰品 |
+| 守势 | 防御 +1 | 护甲 / 饰品 |
+| 猎金 | 击杀 +1 金币（`on_enemy_died`） | 武器 / 饰品 |
+| 坚壁 | 每关首次受击 −1 伤害（`on_player_damaged`，cancelable） | 护甲 |
+| 破竹 | 对满血敌人 +1 伤害（`on_card_resolved`） | 武器 |
+| 回春 | 每 3 回合回复 1 HP（`on_turn_end`） | 饰品 |
+
+现有三件装备按新规则补齐：`eq_rusty_sword`（攻势）、`eq_leather_armor`（守势）、`eq_wolf_fang`（猎金 + 破竹，uncommon 2 条）。
+
+**跨关规则（修订，取代"全部关末消失"）**：武器与护甲仍是局内临时资源、关末消失；**饰品跨关保留 1 件**，存 `ProgressData.equippedTrinket`，进关自动装备，通关与失败都不丢；拾到新饰品时替换并**丢弃旧饰品**（无返还）。装备**不入背包**（Inventory 只存道具）——局内临时资源，关末消失（11_Resources.md §3；展示位见 03_UI/03_Screens.md 2.1 装备槽）。
 
 派生属性公式：`有效攻击 = 基础 Attack + Σ(武器与饰品攻击类加成)`，防御同理；饰品被动（如 eq_wolf_fang 的击杀加金）通过 EffectDefinition 的 `trigger` 字段声明触发点，不改奖励系统代码。战斗中公式的套用位置见 10_Battle.md 第 4 节。
 

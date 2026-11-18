@@ -81,6 +81,8 @@ interface ProgressData {
   mineDaily: { date: string; used: number };               // 矿点每日计数（04_MetaProgression.md §2）
   shopDaily: { date: string; freeRefreshUsed: boolean };   // 商店每日免费刷新（16_Shop.md §2）
   shareDaily: { date: string; rewarded: boolean };         // 分享奖励每日一次（05_Share.md §3）
+  equippedTrinket?: string;                                // 跨关保留的饰品 ID（03_Cards.md D 节）
+  failStreak: { levelId: number; count: number };           // 连续失败计数，用于"换个开局"提示（01_CoreLoop.md §5）
 }
 
 interface RunSnapshot {       // = GameState 完整快照（01_GameState.md §4），断点续玩与异常回滚共用
@@ -107,6 +109,7 @@ interface SettingsData {
   masterVolume: number;       // 0～1，默认 1.0
   muted: boolean;
   vibration: boolean;         // 经 IPlatformService 生效
+  quality: "auto" | "high" | "medium" | "low";  // 画质档位，默认 auto（05_Performance.md §4）
   language: "zh-CN";          // V1 单语，字段预留（12_Delivery_Risk.md §3.1）
 }
 ```

@@ -75,11 +75,12 @@ type HealParams = { cleanse?: string[] };
 type ResourceParams = { resource: "hp" | "food" | "gold" | "shield" };
 type StatusParams = { effectId: string; duration: number };
 type FlagParams = { key: string };
+type RevealParams = { count: number };   // 查看暗堆顶部 N 张（不翻开、不触发效果）
 type SpawnCardParams = { cardId: string; stackId?: string; position: "top" };
-type TransformStackParams = { op: "swapTop" | "reverse" | "moveTopToBottom" | "shuffle"; targetStackId: string };
+type TransformStackParams = { op: "swapTop" | "reverse" | "moveTopToBottom" | "shuffle"; targetStackId?: string };  // 省略 = 作用本堆
 
 type EffectParams = DamageParams | HealParams | ResourceParams | StatusParams
-                  | FlagParams | SpawnCardParams | TransformStackParams;
+                  | FlagParams | RevealParams | SpawnCardParams | TransformStackParams;
 ```
 
 | type | `value` 含义 | `params` 要求 | 备注 |
@@ -89,8 +90,9 @@ type EffectParams = DamageParams | HealParams | ResourceParams | StatusParams
 | resource | 增量（可为负） | `resource` 指定 hp/food/gold/shield | 走 ResourceSystem 与上限校验 |
 | status | 层数 | `effectId`、`duration`（回合） | 同名同 id 走叠加规则（02_Player.md §2.2） |
 | flag | 布尔或数值 | `key` | 写 `runFlags`，机关/出口条件读取 |
+| reveal | 张数 | `count` | 只把暗堆顶 N 张标记为 `faceUp` 供查看，**不翻开、不执行、不消耗卡**；查看结果不写入快照之外的持久数据 |
 | spawnCard | — | `cardId`、`stackId`（缺省目标堆）、`position: "top"` | 生成敌人/卡牌到堆顶 |
-| transformStack | — | `op`、`targetStackId` | 改堆序的四类原子操作 |
+| transformStack | — | `op`、`targetStackId`（省略 = 本堆） | 改堆序的四类原子操作；`swapTop` 必须指定另一堆，`reverse` / `moveTopToBottom` / `shuffle` 默认作用于本堆 |
 
 **减免与取消是两层机制**：`blockedByShield` / `ignoreDefense` 决定**数值**是否被护盾与防御削减；`cancelable` 决定效果能否被**免疫/取消**（如 `poison_cure` 清毒、烟雾弹跳过反击）。陷阱默认 `blockedByShield: true`、`ignoreDefense: false`。
 

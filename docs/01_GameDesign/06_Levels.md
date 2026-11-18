@@ -48,7 +48,11 @@ interface LevelStartingState {
   carryOverInventory?: boolean;      // true = 保留上一关道具库存（11_Resources.md 第 3 节例外）
   startingItems?: { itemId: string; quantity: number }[];  // 开局固定道具（教学关用）
 }
+```
 
+**饰品跨关注入**：LevelInit 时把 `ProgressData.equippedTrinket` 写入 `GameState.equipped.trinket`（03_Cards.md D 节）；关卡配置不覆盖饰品，`startingState` 只影响武器/护甲与资源。
+
+```ts
 interface StackConfig {
   cell: [number, number];            // 5×5 盘中坐标 [row, col]（0～4），不得重叠（全阶段 matrix5，2026-10）
   depth: number;                     // 堆深（卡数），按阶段递进（§3.1 基线），各堆可不同
@@ -61,6 +65,8 @@ interface StackConfig {
 **抽卡算法（V1 冻结）**：`composition` 为**有放回**加权采样（每次独立抽取，允许同卡重复）；`fixedCards` 在抽取完成后按 index 覆盖，**index 0 = 顶层**（与 01_GameState.md 的 `cards[0]` 同口径）；`depth` 由配置给定、不因抽卡结果变化；随机走 `level` 子流（06_DataBalance.md §4）。
 
 **同堆同卡上限（防单调）**：单堆内同一 `cardId` 最多 `max(2, ceil(depth / composition.length))` 张。超限时重抽最多 8 次，仍未命中则按权重取"未达上限"的卡；`fixedCards` 钉位不受上限约束（钉死卡位优先）。跨堆不设上限——多堆盘本身的重复是设计的一部分。Validator 校验该上限在给定 composition 下必然可满足（权重全 >0 即可满足）。
+
+**堆内价值梯度（2026-11-18）**：每堆**最后 `max(2, ceil(depth × 0.3))` 张**（靠近堆底）必须来自高价值池，让"啃深堆"有确定回报。高价值池（Balance `highValuePool`，可随阶段扩充）：`res_treasure`、`heal_salve`、`eq_*`（装备）、`exit_door`、`mech_*`、`evt_shrine`、`spec_*`。浅堆同样至少保底 2 张；`fixedCards` 钉位优先并计入本规则。因此每堆 `composition` 必须至少含 1 张高价值卡（或由钉位提供），纯低价值组合直接打回。
 
 ```ts
 interface LevelObjective {
@@ -257,7 +263,7 @@ C 卡池威胁因子 = clamp(0, 1, (Σ(weight × threat) / Σweight) / 10)
 - 固定关卡：教学、关键机制、首领战、剧情节点、特殊挑战。必须可复现。
 - 规则生成关卡：中后期常规关、资源压力关、敌人组合关、随机事件关。生成器必须用可复现种子。
 
-生成流程：读模板 → 读难度参数 → 选卡牌池 → 生成组合 → 生成 matrix5 盘面堆布局（占格+depth 三档+亮暗）→ 检查出口条件 → 检查资源/道具获取路径 → 模拟测试 → 检查不可解状态 → 保存 → 输出报告。
+生成流程：读模板 → 读难度参数 → 选卡牌池 → 生成组合 → 生成 matrix5 盘面堆布局（占格+depth 三档+亮暗）→ 检查出口条件 → 检查资源/道具获取路径 → 模拟测试 → 检查不可解状态 → 保存 → 输出报告。批量节奏、阶段一逐关清单与抽样规格见 `18_LevelProduction.md` §9～§11。
 
 ## 5. 可解性验证（三层）
 
@@ -280,3 +286,10 @@ C 卡池威胁因子 = clamp(0, 1, (Σ(weight × threat) / Σweight) / 10)
 ## 6. 难度指标
 
 每关记录：通关率、剩余生命、剩余食物、道具使用数、行动次数、失败次数、放弃率、卡牌选择分布。用数据调难度，不凭主观。线上指标由埋点字典自动产出（`../04_Platform/06_Analytics.md`，事件映射 04_EventCatalog.md）；无线上统计时，至少做内部自动模拟 + 人工试玩记录。
+
+**离线校准流程（TBD-12，上线前执行）**：
+
+1. 每阶段跑 1000 局模拟（规格见 §5.1），输出预测 DIFF 与模拟通关率。
+2. 偏差 >15% → 调 `difficultyWeights`（每次只动一维 0.05）→ 重跑，直到落回阈值。
+3. 每阶段手工试玩 5 关，记录剩余 HP / Food / 回合 / 主观难度（1～5），与预测 DIFF 对照。
+4. 留一份校准记录：日期 / 阶段 / 样本 / 偏差 / 改动 / 结论，随 Balance 变更归档；同一阶段每月最多调一次，避免反复横跳。

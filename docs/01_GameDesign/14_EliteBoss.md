@@ -17,6 +17,9 @@
 2. **反击强化**：玩家未一击造成 ≥5 伤害时，反击 +1。
 3. **荆棘**：玩家攻击时自受 1 点伤害（cancelable 走护盾路径）。
 4. **召唤**：HP 首次 ≤50% 时 spawnCard 一只基础敌人入堆顶。
+5. **盘面干扰**：每 3 回合对随机一堆执行 `transformStack`（`shuffle` 或 `swapTop`），或封锁一堆——让走位参与解题（2026-11-18 新增，与 matrix5 盘面联动）。
+
+**首批选型（2026-11-18 定）**：取「再生」+「荆棘」——两者零新增结构、与护盾/治疗互动强；「反击强化」「召唤」留作阶段四扩展。
 
 ## 2. 首领（固定关专属）
 
@@ -31,7 +34,7 @@
 
 ```ts
 interface BossPhase {
-  hpThreshold: number;            // HP 低于该百分比切换下一阶段（如 0.5）
+  hpThreshold: number;            // 进入该阶段的 HP 百分比下限；entry[0] 固定 1.0 = 初始阶段
   modifiers: EffectDefinition[];  // 本阶段生效的被动（trigger 声明触发点）
   announce: string;               // 切换时向玩家公示的提示文案（必须配置）
 }
@@ -39,6 +42,21 @@ interface BossPhase {
 
 - 阶段切换是 priority 30 的 flag 型效果；切换时清空本阶段遗留 tick，并发 `boss_phase_changed` 事件（登记进 04_EventCatalog.md）。
 - 每阶段 modifiers ≤ 2 个；单个首领 modifiers 池 ≤ 6 个（防机制堆叠不可读）。
+
+### 首个首领样例：沉水守卫（`boss_drowned_warden`）
+
+| 项 | 值 |
+|---|---|
+| 关卡 | `level_0180`（阶段三末，固定关，`generationSeed` 必填） |
+| 数值 | HP **18** / ATK **3** / DEF **2**（阶段三 baseline 上浮，基线待实测；落 Balance `enemies`，`boss: true`） |
+| 阶段 1（100%～50%） | **荆棘**：玩家每次攻击自受 1 点伤害（`cancelable`，走护盾） |
+| 阶段 2（≤50%） | **再生 + 潮涌**：回合末回 2 HP；每 3 回合打乱随机一堆顺序（`transformStack.shuffle`，提前 1 回合预告） |
+| announce | P1 `boss_drowned_warden_enter`、P2 `boss_drowned_warden_phase2`、潮涌预告 `boss_drowned_warden_surge`（CopyDeck §10） |
+| 反制 | 护盾/减伤抵消荆棘；炸弹打单次大伤害减少触发次数；再生需连续输出压过回血；潮涌会打乱堆序，关键出口堆优先处理或留火把侦察 |
+| 配置形态 | `bossConfig: [{ hpThreshold: 1.0, modifiers: [荆棘], announce: key1 }, { hpThreshold: 0.5, modifiers: [再生, 潮涌], announce: key2 }]`，`entry[0]` 为初始阶段 |
+| 提示要求 | 入场横幅列出两阶段与关键机制；P2 切换前 1 个行动给预告演出（设计红线 1） |
+
+设计意图：阶段一惩罚"多段小伤害"（高频攻击），阶段二惩罚"输出断档"——两个阶段分别用护盾与爆发解题，避免单一最优打法。
 
 ### 设计红线（06_Levels.md 第 2 节的具体化）
 

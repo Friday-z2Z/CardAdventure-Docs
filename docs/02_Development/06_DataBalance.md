@@ -31,7 +31,7 @@
 | CardValidator | 引用的效果/目标/成本定义存在；baseValue 范围合法；tags 有效 |
 | EnemyValidator | HP > 0、攻击 ≥ 0、奖励字段非负；特殊效果可解析 |
 | ItemValidator | 效果定义存在；maxStack ≥ 1；unlockLevel ≤ 500 |
-| LevelValidator | 出口存在；卡牌 ID 有效；道具已解锁或不作隐性必需；通关条件可满足；matrix5 占格/堆数 ≤20；depth 三档归属、浅堆占比 ≥40%、梯度 ≥1.5 且差 ≥3；`composition` 权重 >0、`fixedCards.index < depth` 且不重复；DIFF 落阶段目标带（06_Levels.md §3.1.2）；evt_merchant 金源可达；开局构筑白名单不含进度类道具（key 等，04_MetaProgression.md §8）；两端模拟（零/满解锁）均可解（06_Levels.md §5.1） |
+| LevelValidator | 出口存在；卡牌 ID 有效；道具已解锁或不作隐性必需；通关条件可满足；matrix5 占格/堆数 ≤20；depth 三档归属、浅堆占比 ≥40%、梯度 ≥1.5 且差 ≥3；`composition` 权重 >0、`fixedCards.index < depth` 且不重复；每堆尾部 `max(2, ceil(depth×0.3))` 张属于 `highValuePool`；DIFF 落阶段目标带（06_Levels.md §3.1.2）；evt_merchant 金源可达；开局构筑白名单不含进度类道具（key 等，04_MetaProgression.md §8）；两端模拟（零/满解锁）均可解（06_Levels.md §5.1） |
 | ConfigValidator | 公共字段齐全；id 唯一；无重复资源引用；覆盖未单设验证器的配置（shop_offers / sign_rewards / tutorial_steps / copy），校验引用 id 存在、CopyDeck key 已登记、数值范围合法 |
 | AssetValidator | 配置引用的图片/音频文件存在且命名合规（总规格书 8.8） |
 | LocalizationValidator | 名称、描述字段非空；无未翻译占位符 |
@@ -65,7 +65,7 @@ balance.xlsx（或 balance.ts 表）
 
 **数值唯一真源**：
 
-- `balance/balance.xlsx` 是唯一可编辑源（sheet：player / costs / limits / enemies / cards / items / status / combo / difficulty / shop / sign / mine / rewards；`threat` 是 enemies 与 cards 的列，不单设 sheet）。
+- `balance/balance.xlsx` 是唯一可编辑源（sheet：player / costs / limits / enemies / cards / items / status / combo / difficulty / shop / merchant / sign / mine / rewards；`threat` 是 enemies 与 cards 的列，不单设 sheet）。
 - `assets/resources/data/**` 的 JSON 是导出产物，**禁止手改**；`docs/` 内的数值表（07_CardCatalog、09_BalanceBaseline、02_Player §2.2）是**只读展示副本**——改值只改 Balance 后重新导出，并同步刷新展示表。
 
 **结构与数值的合并边界**（B1 导出脚本按此实现）：手写 JSON 只写**结构与引用**（`cardIds`、`composition[].cardId`、`effects`、`tags`、`cell` 等），数值字段（hp/attack/defense/baseValue/price/threat/maxStack…）一律由 `export:balance` 注入；模板中数值留空即表示待注入，Validator 不视为错误。
@@ -75,7 +75,7 @@ balance.xlsx（或 balance.ts 表）
 | sheet | 主键 | 关键列（列名 = 代码字段） |
 |---|---|---|
 | player | field | value（maxHp / food / attack / defense / shield / gold） |
-| costs | key | value（foodPerAction / foodEmptyPenalty） |
+| costs | key | value（foodPerAction / foodEmptyPenaltyFirst / foodEmptyPenalty） |
 | limits | key | value（foodCap / shieldCap / goldCap / vulnerableMultiplier / comboMaxTier） |
 | status | id | hpPerStack / healPerTurn / attackDelta / duration / stackMode |
 | enemies | enemyId | hp / attack / defense / rewardGold / rewardFood / threat / elite |
@@ -84,6 +84,7 @@ balance.xlsx（或 balance.ts 表）
 | combo | tier | gold / food / itemChance |
 | difficulty | key | stackWeight / depthWeight / revealWeight / threatWeight / bandStage1～5 / bossBonus / teachCap |
 | shop | key | basePrice / stageMultiplier / refreshCosts / rareWeight / dailyFreeRefresh |
+| merchant | itemId | basePrice / weight / minStage |
 | sign | day | rewardType / rewardId / amount |
 | mine | stage | diamondPerClear / dailyLimit |
 | rewards | key | replayTransferRatio / adDoubleMultiplier / rareChanceCap |
