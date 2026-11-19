@@ -67,6 +67,14 @@
 
 | docs-r34 | 审计 | 删除重复的关卡目标 key、脚本新增 key 唯一检查；明确永恒火种 useType=instant | 02_CopyDeck、scripts/check-doc-refs、04_Items、00_DecisionLog |
 
+| docs-r35 | 勘误 | 道具总数修正：两处"20 件"标题改为 32 件；校验脚本新增"表标题数量 vs 实际行数"检查 | 04_Items、02_CopyDeck、scripts/check-doc-refs、00_DecisionLog |
+
+| docs-r36 | 架构 | 云端同步重设计：腾讯微信云开发 `player_saves`/`save_history`、云函数 pull/push、冲突弹窗、checksum 与条件写、隐私与告警、错误码与文案 | 00_Architecture、10_CodingStandards、07_Ops_Release、00_Compliance、03_Screens、02_CopyDeck、04_EventCatalog、12_Delivery_Risk、02_TbdRegister、01_Glossary、00_DecisionLog |
+
+| docs-r37 | 表现 | 补齐 6 类动效时长基线（暗牌/状态/连击/机关/Boss 横幅/出口解锁）与 skip 用例 | 00_UiSpec、11_Testing、00_DecisionLog |
+
+| docs-r38 | 架构 | 排行榜重设为全服通关数榜（无日榜/好友榜/子域）；准备档口并入主界面，开始游戏后空网格再掉落卡堆 | 02_Leaderboard、00_Architecture、07_Ops_Release、00_Compliance、03_Screens、02_StateMachine、16_Shop、00_UiSpec、04_MetaProgression、04_Items、01_CoreLoop、11_Resources、11_Testing、02_CopyDeck、01_AudioSpec、08_Roadmap、00_Index、01_Glossary、00_DecisionLog |
+
 ## 待发布
 
 | 目标版本 | 计划内容 |

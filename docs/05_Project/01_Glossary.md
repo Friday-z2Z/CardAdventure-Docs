@@ -21,7 +21,7 @@
 | 出口规则 | `ExitRule` | none/flag/kill/collect/pay 五型，多条件为 AND | 13_Exit.md §1 |
 | 结算批次 | priority batch | 一次操作内按 priority 10～80 串行执行的效果批次 | 03_ActionQueue.md §4 |
 | 连击 | `combo` / tier | 连续有效操作计数，2/3/5/8 为奖励档 | 05_Combo.md §3 |
-| 准备档口 | preparation | LevelInit 内、点战斗按钮前的采购与配装阶段 | 03_Screens.md 2.1 |
+| 准备档口 | preparation | **主界面的准备态**（SCREEN_MAIN_MENU），点“开始游戏”前的采购与配装阶段；不是独立场景，主界面没有网格 | 03_Screens.md §2.1 |
 | 携带制 | carry model（模型 B） | 局内只能使用已携带道具与本关新获得道具 | 04_Items.md §3 |
 | 背包组合 | preset / combo | 预存的一套携带方案，多套可切换 | 04_MetaProgression.md §8 |
 | 图鉴 | codex | 按卡牌类型分 Tab 的首见收集页 | 04_MetaProgression.md §5 |
@@ -56,6 +56,10 @@
 | 效果定义 | `EffectDefinition` | 配置化效果：type/target/value/priority/trigger 等 | 03_ActionQueue.md §3 |
 | 本局标记 | `runFlags` | 机关/出口条件用的键值标记 | 01_GameState.md §2 |
 | 断点快照 | `RunSnapshot` | 可重建整局的完整状态，落 `progress.run` | 10_CodingStandards.md §4 |
+| 云端同步 | `ICloudSyncService` | 本地存档的跨设备镜像；pull/push + 冲突弹窗，本地仍是玩法真源 | 10_CodingStandards.md §4.2 |
+| 设备标识 | `deviceId` | 本机 uuid，仅用于冲突提示与日志，不作为身份 | 10_CodingStandards.md §4.2 |
+| 同步基准 | `lastSyncedAt` | 上次成功同步时的本地 `updatedAt`，用于判断哪边更新 | 10_CodingStandards.md §4.2 |
+| 云端校验 | `checksum` | `FNV1a32(JSON.stringify(save))`，不一致拒绝覆盖 | 10_CodingStandards.md §4.2 |
 | 随机子流 | stream（level/reward/shop/meta） | 互不干扰的确定性随机序列 | 06_DataBalance.md §4 |
 | 数值真源 | Balance 表 | `balance/balance.xlsx`，JSON 只是导出物 | 06_DataBalance.md §3 |
 | 验证器 | Validator | Card/Enemy/Item/Level/Config/Asset/Localization 七类 | 06_DataBalance.md §2 |
@@ -69,10 +73,9 @@
 
 | 术语 | 代码名 | 释义 | 出处 |
 |---|---|---|---|
-| 主域 | main context | 游戏主体逻辑与渲染 | 02_Leaderboard.md §2 |
-| 子域 | openDataContext | 开放数据域，原生 canvas 渲染榜单 | 02_Leaderboard.md §2 |
-| 共享画布 | `sharedCanvas` | 子域绘制结果，主域逐帧贴为纹理 | 02_Leaderboard.md §2 |
-| 好友榜 KV | `KVDataList` | `level` / `daily` 两个键，字段设计一次到位 | 02_Leaderboard.md §1 |
+| 全服榜 | global rank | 唯一榜单，按 `clearedCount` 降序，云函数查询、主域渲染 | 02_Leaderboard.md §1 |
+| 通关数 | `clearedCount` | `ProgressData.completedLevels.length`，榜单排序依据 | 02_Leaderboard.md §1 |
+| 榜单行 | `RankRow` | `{ rank, nickname, clearedCount, updatedAt }`，不含 openid | 00_Architecture.md §5 |
 | 主包 | main package | ≤4MB，含引擎、代码、场景与首关资源 | 03_Packaging.md §1 |
 | 分包 | bundle（stage1～5） | 按关卡阶段切换的资源包，合计 ≤20MB | 03_Packaging.md §1 |
 | 远程资源 | CDN bundle | 大图/音频走 CDN，不计包体 | 03_Packaging.md §2 |

@@ -88,7 +88,8 @@ JSON 配置文件
 | 接口 | 封装内容 |
 |---|---|
 | IStorageService | 存档读写（wx.setStorage 等） |
-| ILeaderboardService | 排行榜、开放数据域通信（postMessage、sharedCanvas） |
+| ICloudSyncService | **云端存档同步**（微信云开发云函数，跨设备；06_DataBalance.md §3 之外的新通道） |
+| ILeaderboardService | **全服通关数榜**：云函数查询 + 主域渲染（无开放数据域） |
 | IAdService | 激励视频、Banner（点位定义见 04_Platform/01_Monetization.md） |
 | IPaymentService | 内购/虚拟支付（预留，需版号后启用，01_Monetization.md 第 4 节） |
 | IShareService | 分享、拉新（05_Share.md） |
@@ -103,6 +104,11 @@ interface IStorageService {
   read<T>(key: string): T | null;                  // 同步读，启动恢复用
   write(key: string, value: unknown): Promise<ActionResult>;
   remove(key: string): Promise<void>;
+}
+interface ICloudSyncService {
+  pull(): Promise<{ save: SaveData; updatedAt: number; deviceId: string } | null>;
+  push(save: SaveData, expectedUpdatedAt: number): Promise<ActionResult>;
+  status(): { enabled: boolean; lastSyncedAt: number; pending: boolean };
 }
 interface IAssetService {
   load<T>(key: string): Promise<T>;                // resources / bundle / 远程统一入口
@@ -131,11 +137,10 @@ interface IAnalyticsService {
   flush(): Promise<void>;
 }
 interface ILeaderboardService {
-  open(tab: "friend" | "daily"): void;
+  fetch(): Promise<{ rows: RankRow[]; self: { rank: number; clearedCount: number } | null }>;
   close(): void;
-  refresh(): void;
-  submitScore(level: number): Promise<ActionResult>;
 }
+type RankRow = { rank: number; nickname: string; clearedCount: number; updatedAt: number };  // 不含 openid
 ```
 
 好处：平台 API 变更时只改一处；测试环境可注入 mock 实现；未来跨平台无需重写业务。
@@ -156,7 +161,7 @@ card-adventure/                  Creator 项目根（Dashboard 打开）
 │   │   │                        combo / level / reward / save 九大系统
 │   │   ├── ui/                  base/（BaseView/BasePopup/Toast 视图基类，见 03_UI/00_UiSpec.md 4.1）、
 │   │                        components/（组件库）、screens/、dialogs/、animations/
-│   │   └── services/            analytics、audio、asset、storage、leaderboard、
+│   │   └── services/            analytics、audio、asset、storage、cloud-sync、leaderboard、
 │   │                            ad、share —— 平台与引擎能力只在这里出现
 │   ├── resources/               动态加载资源（resources.load）
 │   │   └── data/                cards/、items/、enemies/、levels/、balance/、
@@ -165,7 +170,6 @@ card-adventure/                  Creator 项目根（Dashboard 打开）
 │   ├── art/                     images/、icons/、ui/（随包素材，itch.io 加工后入库）
 │   ├── audio/                   bgm/、sfx/
 │   └── fonts/                   云端字体的本地回退字体
-├── openDataContext/             开放数据域子域（原生 canvas，02_Leaderboard.md）
 ├── balance/                     balance.xlsx 唯一数值源（导出产物进 resources/data，06_DataBalance.md §3）
 ├── tests/                       单测/集成（Node 运行，不进 assets）
 ├── scripts/                     export:balance / export:copy / validate / check:licenses /
@@ -193,7 +197,7 @@ card-adventure/                  Creator 项目根（Dashboard 打开）
 | 微信开发者工具 | 最新稳定版 | 打开 build/ 产物、真机预览、提审 |
 | npm scripts | test / validate / export:balance / export:copy / check:licenses | 数据流水线与 CI（输入输出契约见 06_DataBalance.md §3） |
 
-初始化顺序：主体注册（00_Compliance.md）→ Creator 建工程 → 按第 6 节建目录骨架 → services 接口空实现 → 第一个可构建的微信包 → tests+lint 跑通 → 之后才写业务。
+初始化顺序：主体注册（00_Compliance.md）→ Creator 建工程 → 按第 6 节建目录骨架 → services 接口空实现 → 微信云开发环境与 `syncPull` / `syncPush` / `syncStatus` 三个云函数部署（失败不阻断本地包）→ 第一个可构建的微信包 → tests+lint 跑通 → 之后才写业务。
 
 **版本与配置基线（B1 冻结项）**：
 

@@ -317,6 +317,26 @@ if (copyDoc) {
   });
 }
 
+// ---------- 10. 道具表标题数量 vs 实际行数 ----------
+const checkCount = (file, headingPrefix) => {
+  const doc = byBase.get(file);
+  if (!doc) return;
+  const i = doc.lines.findIndex((l) => l.startsWith(headingPrefix));
+  if (i < 0) return;
+  const declared = /（(\d+)\s*件/.exec(doc.lines[i]);
+  if (!declared) return;
+  let rows = 0;
+  for (let k = i + 1; k < doc.lines.length && !doc.lines[k].startsWith("## "); k++) {
+    const c = splitCells(doc.lines[k]);
+    if (c && /^[a-z][a-z0-9_]*$/.test(c[0].trim())) rows++;
+  }
+  if (+declared[1] !== rows) {
+    add(file, i + 1, "数量不一致", `标题写 ${declared[1]} 件，表内实际 ${rows} 行`);
+  }
+};
+checkCount("04_Items.md", "## 4.");
+checkCount("02_CopyDeck.md", "## 1.");
+
 // ---------- 输出 ----------
 if (problems.length === 0) {
   console.log(`文档引用校验通过：${allFiles.length} 个文件，0 处问题。`);

@@ -56,12 +56,15 @@ develop → 体验版（内测二维码）→ 提审 → 审核版 → 全量发
 
 | 项 | 规则 |
 |---|---|
-| 集合 | `daily_score`：`openid` / `date`(yyyymmdd) / `level` / `updatedAt`；索引 `(date, level desc)`、`(openid, date)` 唯一 |
-| 写入 | 仅云函数写，校验 `level` 单调不减且 ≤ 已通关配置上限；客户端只读查询 |
-| 读取 | 日榜前 50 名 + 本人名次（`count(level > 本人)+1`），V1 不翻页 |
-| 定时任务 | 每日 00:05 聚合 T-1 的 06_Analytics 指标；每周日清理 90 天前 `daily_score` |
+| 榜单集合 | `global_rank`：`_id = openid`，`clearedCount` / `level` / `nickname` / `updatedAt`；索引 `(clearedCount desc, updatedAt asc)` |
+| 云存档集合 | `player_saves`：`_id = openid`，`save` / `updatedAt` / `lastSyncedAt` / `deviceId` / `checksum` / `schemaVersion`；`save_history`：每账号最近 5 版，30 天清理 |
+| 云函数 | `syncPull` / `syncPush` / `syncStatus`：身份只取 `getWXContext().OPENID`，客户端不直连数据库；`syncPush` 用 `updatedAt` 条件写防并发丢写 |
+| 云同步告警 | 同步失败率 >5%（15 分钟窗口）、冲突率 >2% 会话、单档 >200KB，任一超限写入监控并通知 |
+| 榜单写入 | 仅云函数 `rankUpdate` 写，校验 `clearedCount` 单调不减且 ≤500；客户端只读查询 |
+| 榜单读取 | 全服前 50 名 + 本人名次（`count(clearedCount > 本人)+1`），V1 不翻页 |
+| 定时任务 | 每日 00:05 聚合 T-1 的 06_Analytics 指标；全服榜无按日清理任务 |
 | 告警 | 写入失败率 >5%（15 分钟窗口）、日读取量 >免费额度 70%、单日新增 > 日均 3 倍 |
-| 降级 | 云开发不可用时榜单显示"暂时无法加载"，不影响主线玩法与本地存档 |
+| 降级 | 云开发不可用时榜单显示"暂时无法加载"、同步提示"稍后重试"并后台补推；**本地存档照常读写，主线玩法不中断** |
 
 免费额度按当期官方口径核对，项目上线前实测一次写入/读取量并记入本节。
 

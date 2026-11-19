@@ -9,7 +9,6 @@
 | 主包 | 引擎运行时、全部代码（assets/scripts）、场景、主菜单/UI 骨架图、字体、核心音效、阶段一前 20 关资源（resources/ 内） | ≤ 4MB（微信硬限制，构建面板查看体积统计） |
 | Asset Bundle（stage2～stage5） | 每关卡阶段（06_Levels.md 五阶段）一个 bundle：该阶段关卡配置 JSON + 专属图片；构建时配置为**微信分包** | 每包按当期单包限额 |
 | Asset Bundle（远程） | 大体积非代码资源：全量卡面高清图、BGM、首领演出素材；构建为**远程 bundle** 走 CDN | 不受分包限制，运行时加载 |
-| 开放数据子域 | openDataContext（构建面板单独配置，02_Leaderboard.md） | 单独限额 |
 
 规则：
 
@@ -68,7 +67,7 @@ T2 存档同步恢复：wx.getStorageSync 读主档（≤50ms）
 T3 异步并行段（四项互不阻塞，单项超时 3s）：
    a. 登录/云开发初始化（wx.login 等）——失败不阻塞，进主菜单后后台重试
    b. 配置热更握手（§3：config/version → 增量拉取 → Validator → 热替换 Registry）——失败回退包内兜底版本 + 告警
-   c. 云端字体注册（fetchFonts → wx.loadFont）——失败回退 sans-serif；就绪后主域 postMessage 下发字体族给子域（02_Leaderboard.md §3）
+   c. 云端字体注册（fetchFonts → wx.loadFont）——失败回退 sans-serif；榜单改为主域渲染后不再需要跨子域同步字体族（02_Leaderboard.md）
    d. 主包必需资源加载（阶段一前 20 关 + UI 骨架）
 T4 Loading 进度 = T3 各项加权进度；总预算 5s——超时项降级放行（用兜底/占位），转后台重试，不阻塞进主菜单
 T5 MainMenu 可交互 → 后台静默预热用户所在阶段的分包 → 广告 SDK 懒初始化（首次调用 IAdService 时才拉起）

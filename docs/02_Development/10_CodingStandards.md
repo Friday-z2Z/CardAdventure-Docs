@@ -43,7 +43,7 @@ type ActionResult =
 | 类别 | 错误码 |
 |---|---|
 | 玩法类 | `INVALID_TARGET`、`NOT_ENOUGH_FOOD`、`NOT_ENOUGH_GOLD`、`NOT_ENOUGH_DIAMOND`、`ITEM_NOT_FOUND`、`ITEM_COOLDOWN`、`ITEM_TARGET_INVALID`、`CARD_NOT_ACTIONABLE`、`INVALID_CARRY_ITEM`（携带白名单外/进度类道具）、`SLOT_DUPLICATED`（组合内重复道具）、`BAG_CAPACITY_EXCEEDED`（超出携带槽位）、`ITEM_STACK_FULL`（仓库堆叠已满，购买被阻止）、`EXIT_CONDITION_UNMET`、`LEVEL_ALREADY_COMPLETED`、`SAVE_DATA_INVALID` |
-| 平台/网络类 | `NETWORK_UNAVAILABLE`（无网络）、`CONFIG_UPDATE_FAILED`（配置热更失败，已回退兜底，03_Packaging.md §3）、`CLOUD_SYNC_FAILED`（云开发/日榜提交失败）、`AD_NOT_READY`（广告未填充或拉取失败）、`STORAGE_WRITE_FAILED`（存档写失败，转本地暂存重试） |
+| 平台/网络类 | `NETWORK_UNAVAILABLE`（无网络）、`CONFIG_UPDATE_FAILED`（配置热更失败，已回退兜底，03_Packaging.md §3）、`CLOUD_SYNC_FAILED`（云同步/全服榜提交失败）、`CLOUD_SAVE_INVALID`（云端存档校验失败，不覆盖本地）、`AD_NOT_READY`（广告未填充或拉取失败）、`STORAGE_WRITE_FAILED`（存档写失败，转本地暂存重试） |
 
 登记制度（与事件、文案同等的先登记再编码）：
 
@@ -62,7 +62,8 @@ UI 按错误码展示统一提示；不能出现点击后没有任何反馈的�
 ```ts
 interface SaveData {
   version: number;            // 存档结构版本，迁移链依据（当前 1）
-  updatedAt: number;
+  updatedAt: number;          // 本地最后修改时间（毫秒）
+  lastSyncedAt: number;       // 最后一次成功云端同步时的 updatedAt；0 = 从未同步
   progress: ProgressData;
   settings: SettingsData;
 }
@@ -111,6 +112,8 @@ interface SettingsData {
   vibration: boolean;         // 经 IPlatformService 生效
   quality: "auto" | "high" | "medium" | "low";  // 画质档位，默认 auto（05_Performance.md §4）
   language: "zh-CN";          // V1 单语，字段预留（12_Delivery_Risk.md §3.1）
+  cloudSyncEnabled: boolean;  // 云端同步开关，默认 true（隐私拒绝时置 false）
+  deviceId: string;           // 本机生成的 uuid，首次启动写入并持久化；仅用于冲突提示
 }
 ```
 
@@ -138,6 +141,25 @@ interface SettingsData {
 3. key 命名一律 `snake_case`、`save_`/`cache_` 前缀区分用途；删除或改名 key 必须同步迁移逻辑。
 4. **备份读取顺序**：主档校验失败 → 取 `save_backup_a` / `save_backup_b` 中 `updatedAt` 较新且校验通过的一份 → 两份都失败才空档启动 + `SAVE_DATA_INVALID`；任何情况下不覆盖仍可读的备份。
 5. **体积上限**：单档软上限 **200KB**（阶段五 400 张卡约 24KB，×3 份备份仍充裕）；超限时优先裁剪非必要字段（`killedEnemyIds`、`firstSeenHints` 去重后压缩、历史统计），不得裁 `run` 与 `meta`。写档后记录体积，超过 150KB 打点告警。
+
+### 4.2 云端同步（腾讯微信云开发，2026-11-18 新增）
+
+**定位**：本地存档仍是玩法唯一真源，云端是**跨设备镜像**；离线可完整游玩，云端失败不阻断。同一微信账号通过云函数上下文 `OPENID` 识别，无需自建账号。
+
+**数据契约**：
+
+| 项 | 规则 |
+|---|---|
+| 集合 | `player_saves`：`_id = openid`，字段 `save`(SaveData) / `updatedAt` / `lastSyncedAt` / `deviceId` / `checksum` / `schemaVersion`；`save_history` 保留最近 5 版，30 天清理 |
+| 写入方 | **只有云函数**可写；客户端不直接访问数据库，身份由云函数从 `getWXContext().OPENID` 取，不信任客户端传 uid |
+| 校验 | `checksum = FNV1a32(JSON.stringify(save))`（与 `core/random` 同一算法、独立 salt）；不一致回 `CLOUD_SAVE_INVALID`，不覆盖本地 |
+| 条件写 | `push(save, expectedUpdatedAt)` 带条件更新：云端 `updatedAt ≠ expected` 即拒绝，防并发丢写 |
+| 触发时机 | 启动（隐私同意后）、关卡结算、设置变更、断点写入后（30s 节流）；设置页"立即同步"；`onHide` 尽力推送一次 |
+| 失败处理 | 最多重试 3 次（指数退避），仍失败保留本地并在 `lastSyncedAt` 不变；下次启动按 `updatedAt > lastSyncedAt` 自动补推 |
+| 冲突判定 | 本地与云端都在 `lastSyncedAt` 之后变化 → 不自动合并，弹 `POPUP_SYNC_CONFLICT` 让玩家选"使用云端 / 保留本地覆盖云端" |
+| 版本迁移 | 云端同样走 `MIGRATIONS` 链；云端版本高于客户端时提示更新，不强行降级读取 |
+
+**开关**：`SettingsData.cloudSyncEnabled` 默认 true；隐私弹窗拒绝后置 false，仅本地存档。`deviceId` 只用于冲突提示与日志，不作为身份。
 
 迁移规范：
 

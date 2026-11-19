@@ -2,7 +2,7 @@
 
 > 补全章节。所有直接展示给玩家的文本集中在此，是唯一的文案来源——UI 不允许硬编码文案字符串。卡牌 23 张的说明文案见 01_GameDesign/07_CardCatalog.md，本文覆盖其余全部元素。文案走数据流水线，由 LocalizationValidator 校验非空（06_DataBalance.md 第 2 节）。
 
-## 1. 道具介绍文案（对应 04_Items.md 全量 20 件）
+## 1. 道具介绍文案（对应 04_Items.md 全量 32 件）
 
 展示位置：道具栏长按 / Tooltip 面板（效果数值由 UI 按配置自动拼接，不写入文案）。
 
@@ -90,6 +90,7 @@
 | NETWORK_UNAVAILABLE | 网络不太顺畅，先继续冒险吧。 |
 | CONFIG_UPDATE_FAILED | 配置更新失败，已使用本地版本。 |
 | CLOUD_SYNC_FAILED | 云端同步暂时失败，进度已保存在本地。 |
+| CLOUD_SAVE_INVALID | 云端存档校验未通过，已保留本地进度。 |
 | AD_NOT_READY | 广告还没准备好，稍后再试试。 |
 | STORAGE_WRITE_FAILED | 进度暂时没法保存，会自动重试。 |
 
@@ -101,10 +102,17 @@
 | 失败死因（敌人） | 你被{敌人名}打败了。休息一下，再出发吧。 | 失败结算面板（01_CoreLoop.md 第 5 节） |
 | 失败死因（食物） | 肚子空空走了太久。补给好一点，下次会更顺利。 | 同上 |
 | 失败死因（状态） | {状态名}让你撑不住了。下次记得先照顾好自己。 | 同上 |
-| 商店未开放 | 行商还在路上，通过第 20 关后来找他吧。 | 主界面/结算页商店入口置灰点击（16_Shop.md 第 1 节） |
+| 商店未开放 | 行商还在路上，通过第 20 关后来找他吧。 | 主界面商店入口置灰点击（准备档口即主界面，16_Shop.md §1） |
 | 通关金币入账 | 金币 +{n} 已存入钱袋。 | 通关结算面板（金币转钱包，11_Resources.md 第 3 节；"钱袋"= walletGold，避免与道具背包混淆） |
 | 刷新货架确认 | 花 {n} 金币换一批货物？ | 商店刷新二次确认（ConfirmPopup） |
 | 我的页统计项 | 通关关数 / 最深关卡 / 钻石 / 图鉴完成度 | 我的页（03_UI/03_Screens.md POPUP_PROFILE） |
+| 云端同步·已同步 | 进度已存到云端。 | POPUP_SETTINGS 云端同步行 |
+| 云端同步·未同步 | 还没有同步过，进度只在这台设备上。 | POPUP_SETTINGS 云端同步行 |
+| 立即同步按钮 | 立即同步 | POPUP_SETTINGS |
+| 同步冲突标题 | 两份进度不一样，选一份继续。 | POPUP_SYNC_CONFLICT |
+| 同步冲突·云端 | 使用云端（{日期}，第 {n} 关） | POPUP_SYNC_CONFLICT |
+| 同步冲突·本地 | 保留本地（{日期}，第 {n} 关） | POPUP_SYNC_CONFLICT |
+| 同步冲突提示 | 选中的那份会覆盖另一份，选好后不能撤销。 | POPUP_SYNC_CONFLICT |
 | 签到未开放 | 签到将在通过第 20 关后开启。 | 主界面顶栏签到入口置灰点击（17_SignIn.md） |
 | 签到标题 | 每日签到 | POPUP_SIGN |
 | 签到已领 | 今天已领过啦，明天再来。 | POPUP_SIGN 当日重复点击 |
@@ -182,9 +190,9 @@
 | tree_start_food_name / _desc | 干粮袋 / 开局食物 +0.5（每级，累计取整） | 成长树节点 |
 | tree_bag_capacity_name / _desc | 背包扩容 / 解锁额外携带槽位（最多 5 槽，随等级解锁） | 成长树节点 |
 | combo_purchase_name / _desc | 背包组合 / 保存多套开局组合，一键切换（第 2～4 套各 80 钻石；非成长树节点，入口在背包组合面板） | 背包组合购买 |
-| depart_confirm_button | 出发！ | 准备档口确认按钮（03_UI/03_Screens.md 2.1） |
-| depart_edit_title | 出发准备 | LevelInit 内准备档口标题 |
-| depart_edit_slot_hint | 点槽位更换道具 | 准备档口槽位提示 |
+| depart_confirm_button | 开始游戏 | 主界面准备态主按钮（03_UI/03_Screens.md §2.1） |
+| depart_edit_title | 出发准备 | 主界面背包编辑标题 |
+| depart_edit_slot_hint | 点槽位更换道具 | 主界面背包槽位提示 |
 | tree_hp_up_name / _desc | 强健体魄 / 初始生命上限 +1（每级，满 6 级共 +6） | 成长树节点 |
 | tree_shield_up_name / _desc | 老练防御 / 开局护盾 +1 | 成长树节点 |
 | tree_gold_up_name / _desc | 盘缠 / 开局金币 +3，第 2 级再 +2（共 +5） | 成长树节点 |
@@ -195,7 +203,7 @@
 | 商店按钮 | 购买 {价格}／刷新 {价格} | 商店面板（16_Shop.md） |
 | 教学跳过 | 跳过引导 | 引导覆盖层（15_Tutorial.md） |
 | 加载失败回退 | 资源还在路上，稍后再试 | LoadingView（05_Performance.md 规则 3） |
-| 排行榜空数据 | 还没有可展示的排名，先去闯关吧 | 好友榜/日榜空态（02_Leaderboard.md 第 6 节） |
+| 排行榜空数据 | 还没有可展示的排名，先去闯关吧 | 全服榜空态（02_Leaderboard.md §4） |
 | 排行榜加载中 | 正在集结旅人的足迹…… | 榜单加载态 |
 | 背包入口 | 背包 | 主菜单独立入口（道具中心，03_UI/03_Screens.md 2.1） |
 | 成长树入口 | 成长树 | 主菜单独立入口（成长中心，03_UI/03_Screens.md 2.1） |

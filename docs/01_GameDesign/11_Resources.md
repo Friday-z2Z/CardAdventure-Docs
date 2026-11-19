@@ -30,7 +30,7 @@
 |---|---|---|
 | 局内金币 | 本关临时资源 | 进关从 LevelStartingState 重建（**不携带**钱包金币入局）；用于 evt_merchant 购买、pay 型出口；失败重试全部重置（没收） |
 | 装备（武器/护甲/饰品） | 武器护甲为局内临时资源，饰品跨关 | 翻卡即入装备槽（**不入背包**，03_Cards.md D 节）；武器/护甲关末消失；**饰品跨关保留 1 件**（`ProgressData.equippedTrinket`），通关与失败都不丢；断点存档保存装备 ID |
-| 钱包金币（walletGold） | ProgressData 永久货币 | 胜利结算时按 `replayTransferRatio`（Balance，基线 1.0 = 全额）转存钱包；在主界面商店与准备档口商店购买道具；道具入 Inventory（跨关保留），带入后续局 |
+| 钱包金币（walletGold） | ProgressData 永久货币 | 胜利结算时按 `replayTransferRatio`（Balance，基线 1.0 = 全额）转存钱包；在主界面商店购买道具（准备档口即主界面）；道具入 Inventory（跨关保留），带入后续局 |
 
 - 关卡胜利结束时：HP/Food/Shield 等**其余**临时资源不带入下一关，下一关从 LevelStartingState 重建（关卡可配置携带例外，见 06_Levels.md 第 3 节）。
 - 道具库存（Inventory）、钱包金币与永久成长**跨局保留**，区别于局内临时资源。

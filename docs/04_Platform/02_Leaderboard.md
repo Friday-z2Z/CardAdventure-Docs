@@ -1,68 +1,51 @@
-# 排行榜与开放数据域
+# 全服排行榜（通关数榜）
 
-> 补全 08_Roadmap 决策表"排行榜走开放数据域"项。项目代码已有日榜/好友榜实践，本文将其固化为规范，避免主子域的坑被重新踩一遍。
+> 2026-11-18 重设：V1 **只有一张全服榜**，按累计通关关卡数降序；原「好友榜 + 日榜 + 开放数据域」方案整体废弃。榜单数据来自云开发，界面由**主域**直接渲染，不再有子域 / sharedCanvas / postMessage 通道。
 
-## 1. 榜单体系
+## 1. 榜单规则
 
-| 榜 | 数据来源 | 实现层 |
-|---|---|---|
-| 好友榜（关卡进度） | 开放数据域 wx.getFriendCloudStorage | 子域（openDataContext）渲染 |
-| 日榜（全服每日最高关） | 云开发（微信云）数据库，无自建后端 | 主域直查 + 子域渲染 |
+| 项 | 规则 |
+|---|---|
+| 唯一榜单 | 全服通关数榜，名次按 `clearedCount` 降序；同数按 `updatedAt` 升序（先达成者靠前） |
+| `clearedCount` | = `ProgressData.completedLevels.length`（服务端从 `player_saves` 读取并同步写入），**不是**当前解锁关；零通关玩家也可上榜（显示 0） |
+| 展示范围 | 前 **50 名** + 本人名次；V1 不翻页、不分页、不按日/周重置 |
+| 身份与展示 | `openid` 只在云函数内部作为主键；展示用昵称/头像来自用户主动填写的 `POPUP_PROFILE`，未填写显示“旅人 + 默认剪影”，不暴露 openid |
+| 提交时机 | `level_completed` 后异步调用云函数 `rankUpdate`；失败静默重试 1 次，不阻塞结算 |
+| 防作弊 | 服务端校验 `clearedCount` 单调不减且 ≤ 配置总关数 500；回退值直接丢弃并记 `error_caught` |
 
-- 上报数据集：wx.setUserCloudStorage 写 KVDataList：key "level" 存当前最高关，key "daily" 存 yyyymmdd|最高关——开放数据域只能读这些 KV，字段设计一次到位。
-- 好友榜按进度总值排序；日榜按当日重置。
+**取消项**：好友榜、日榜、`daily_score` 集合、`wx.setUserCloudStorage` / `wx.getFriendCloudStorage`、`yyyymmdd|最高关` 的 `daily` 字段、开放数据域子域与 postMessage 字体下发、90 天日榜清理任务。这些不再出现在实现与文档中。
 
-**上报字段约定（V1）**：
+## 2. 云集合与云函数
 
-| key | 值格式 | 说明 |
-|---|---|---|
-| `level` | 十进制整数字符串（如 `"37"`） | 当前最高通关关卡，好友榜排序依据 |
-| `daily` | `yyyymmdd\|最高关`（如 `"20261117\|37"`） | 当日最高关，按**北京时间（UTC+8）**切日 |
+| 项 | 规则 |
+|---|---|
+| 集合 | **`global_rank`**：`_id = openid`，字段 `clearedCount` / `level` / `nickname` / `updatedAt`；索引 `(clearedCount desc, updatedAt asc)` |
+| 写入 | 仅云函数 `rankUpdate` 可写；`openid` 从 `cloud.getWXContext().OPENID` 取，客户端不能传 |
+| 查询 | 云函数 `rankTop` 返回 `{ rows: Top50[], self: { rank, clearedCount } }`；主域渲染，客户端不直连数据库 |
+| 清理 | 无日榜清理需求；离职/注销账号按平台流程处理，V1 不设 TTL |
+| 额度 | 写入量 = 通关事件数（远低于日榜提交频次）；上线前按当期官方口径实测一次 |
 
-- KVDataList 受平台条数与单值字节限制：**只保留上述两键**，禁止扩字段；新增字段须先登记本节并评估配额。
-- 日榜提交走云函数：`level_completed` 后异步调用，服务端校验 `level` 单调不减且不超过已通关配置上限，超限丢弃并记 `error_caught`；客户端不直接写库。
-- 日榜查询：按 date 取前 50 名（`level` 降序、`updatedAt` 升序），本人名次 = `count(level > 本人) + 1`；V1 不提供翻页。
+## 3. 主域流程
 
-## 2. 主域与子域架构（硬约束）
+1. 主界面点“排行榜” → 隐私授权（未授权不显示入口，00_Compliance.md §2）→ `ILeaderboardService.fetch()`。
+2. 云函数返回前 50 与本人名次 → UI 在主域用普通 Cocos 组件渲染，复用统一列表与空态。
+3. 关闭直接销毁列表；无子域贴图、无 rAF 常驻、无字体跨域同步问题。
 
-```text
-主域 ILeaderboardService
-  ↓ postMessage {type:"open"|"close"|"font"|"refresh", ...}   （主子域唯一通道）
-子域 openDataContext（独立 Canvas，原生 2D）
-  ↓ 子域自己的 canvas.requestAnimationFrame 保活渲染
-sharedCanvas
-  ↓ 主域每帧把 sharedCanvas 刷为 Sprite 的动态纹理（Cocos：SpriteFrame + texture.update）
-```
+## 4. 降级与空态
 
-> Cocos 集成要点：子域仍是原生 canvas（openDataContext 不用 Creator UI 渲染）；主域侧建一个常驻 Sprite，每帧从 sharedCanvas 上传纹理，锚点与安全区对齐。构建面板勾选"开放数据域"并配置子域代码目录。
+| 场景 | 行为 |
+|---|---|
+| 无网络 / 云函数失败 | 展示上次缓存榜单（若有）并标“暂时无法更新”；无缓存则展示空态文案（CopyDeck §5） |
+| 无玩家数据 | 前 50 未满时只显示已有条目，不补假数据 |
+| 未填写昵称 | 显示“旅人”与默认剪影，不阻断上榜 |
 
-已知约束与既有对策（踩过的坑，编码前必读）：
+## 5. 验收
 
-1. **字体必须主域下发**：子域拿不到主域注册的字体族。主域 wx.loadFont 注册云端字体后 postMessage {type:"font", family} 同步；子域缓存族名，收到 'sans-serif' 不覆盖，全部文字按 "字号px 字体族" 拼接渲染，取不到族名自动回退系统字体，绝不空白。
-2. **子域不能读主域状态**：榜单所需数据（名次、本人标记、mock 数据）全部经 postMessage 传入。
-3. **透明底**：子域画布透明，露出主域面板底色；文字色用 ColorInk 系，样式与主域日榜完全一致。
-4. **名次配色**：前三金（ColorPrimary）/银/铜，本人行金色高亮，行高固定（历史实现 rowH=34，头像圆 r13/16）。
-5. **关闭即停帧**：close 后子域停止 rAF，主域停止 drawImage，不留常驻开销。
+- 排序正确：通关数多者在前；同数按达成时间升序；本人名次 = `count(clearedCount > 自己) + 1`。
+- 防回退：云函数拒绝 `clearedCount` 变小或 >500 的写入。
+- 无残留：全文无好友榜、日榜、`daily_score`、开放数据域、sharedCanvas、postMessage 排行榜引用。
+- 主域 60fps 下列表滚动无掉帧；无子域常驻绘制。
 
-## 3. 流程与时序
+## 6. 合规联动
 
-1. 主菜单点击"排行榜" → ILeaderboardService.open() → postMessage open。
-2. 字体就绪即同步一次（游戏启动字体加载完成后）；若字体晚于开榜，再次 postMessage font 覆盖。
-3. 拉取好友数据 → 子域渲染 → 主域每帧贴图；用户滚动经 postMessage 传 scroll。
-4. 关闭 → postMessage close → 主域移除 sharedCanvas 贴图。
-
-## 4. 云开发（日榜）
-
-- 集合 daily_score：openid、date、level、updatedAt；openid 由云函数侧取（客户端不伪造）。
-- 提交时机：level_completed 事件（04_EventCatalog.md）后异步提交，失败静默重试一次，不阻塞结算。
-- 免费额度内预估够用；超限再评估按量付费。
-
-## 5. 合规联动
-
-- 进入排行榜前触发隐私授权（00_Compliance.md 第 2 节）；拒绝则隐藏入口。
-- 榜单仅展示微信昵称与头像（平台提供），不新增收集项。
-
-## 6. 验收
-
-- 榜单在无字体/无网络/无好友数据三种降级下均正常显示（占位文案见 CopyDeck 第 5 节）。
-- 主域 60fps 下贴图无掉帧；关闭后无残留绘制。
+进入排行榜前触发 `wx.requirePrivacyAuthorize`；隐私后台只声明“openid + 通关数 + 用户主动填写的昵称头像用于全服榜展示”。拒绝授权时隐藏入口，不影响主线玩法与本地/云存档。

@@ -13,7 +13,7 @@
 | 决策项 | 结论 | 依据 |
 |---|---|---|
 | 技术栈 | **Cocos Creator + TypeScript（方案 B）** | 00_GameOverview.md 第 5 节 |
-| 游戏方向 | 单机优先，好友榜走开放数据域 + 日榜走云开发，无账号体系 | 04_Platform/02_Leaderboard.md |
+| 游戏方向 | 单机优先，排行榜为云开发全服通关数榜（主域渲染），无好友榜/日榜/账号体系 | 04_Platform/02_Leaderboard.md |
 | 核心玩法 | 卡牌堆选翻：**全阶段 5×5 矩阵盘**（堆数 2～20 随阶段递进，少堆少牌起步，2026-10 修订参考 Card of Darkness；06_Levels.md §3.1） | 01_CoreLoop.md |
 | 生命/食物/金币规则 | 见 01_CoreLoop.md 与 09_BalanceBaseline.md | — |
 | 效果执行顺序 | ActionQueue priority 批次 | 03_ActionQueue.md 第 4 节 |

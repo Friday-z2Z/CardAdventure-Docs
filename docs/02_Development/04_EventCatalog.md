@@ -55,6 +55,8 @@ enemy_died（BattleSystem 发布）
 | wallet_gold_changed | value, delta, reason | 结算转存 / 商店支付（非局内） | 主界面钱包栏、我的页、商店 |
 | diamond_changed | delta, reason | 矿点产出 / 成就 / 成长树与背包组合购买（非局内） | 主界面钱包栏、图鉴、成长树、背包 |
 | save_written | ok, version | SaveSystem | UI（提示）、错误上报 |
+| cloud_sync_completed | result, direction（pull/push）, at | CloudSyncService | UI（设置页同步状态）、埋点 |
+| cloud_sync_conflict | cloudAt, localAt, cloudLevel, localLevel | CloudSyncService | UI（POPUP_SYNC_CONFLICT）、埋点 |
 
 ## 3. 维护要求
 

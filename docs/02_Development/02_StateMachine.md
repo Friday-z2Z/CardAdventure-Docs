@@ -21,7 +21,7 @@ Boot → Loading → MainMenu → LevelSelect → LevelInit
 | Loading | 显示进度 | 操作 | Boot 完成 / 切换场景 | 必需资源就绪 | 资源加载失败 → 回退占位资源，记录错误 |
 | MainMenu | 点按钮 | 操作卡牌 | Loading 完成 | 进入关卡选择/设置 | — |
 | LevelSelect | 选关、查看存档 | 操作 | MainMenu 点击 | 选中关卡 | 关卡配置缺失 → 置灰该关 |
-| LevelInit | 读配置、生成布局、创建 GameState、**准备档口**（盘面不出现；可打开商店/背包、返回主菜单） | 盘面卡牌操作（战斗按钮前不可点卡） | LevelSelect 选中关卡 / MainMenu 主按钮直达（新玩家→第 1 关；老玩家→断点恢复或下一未通关关，见 03_UI/03_Screens.md 2.1） | 玩家点击**战斗按钮**或背包内"出发"（布局就绪后）→ PlayerTurn | 配置/种子无效 → 报错回菜单；档口期切后台：回前台原地继续（无战斗进度）；档口期返回主菜单**不写断点**（断点自 PlayerTurn 起生成）；断网：仅商店/排行榜不可用 |
+| LevelInit | **内部过渡状态，无独立界面**：读配置、生成布局、创建 GameState；进入后立即显示 SCENE_BATTLE 的**空网格区域**（主界面商店/背包入口消失），随后卡堆掉落 | 盘面卡牌操作（掉落结束前不可点卡） | LevelSelect 选中关卡 / MainMenu 主按钮“开始游戏”（新玩家→第 1 关；老玩家→断点恢复或下一未通关关） | 卡堆掉落动画结束 → PlayerTurn | 配置/种子无效 → 报错回主界面；掉落期切后台：回前台继续动画或跳过；**断点自 PlayerTurn 起生成**；断网：仅全服榜/云同步不可用 |
 | PlayerTurn | 点顶层卡、点道具、查看信息 | 重复点击已锁定卡 | LevelInit 或 CheckResult 通过 | 请求入队成功 | 输入锁：结算中点击排队或忽略并提示 |
 | ItemTargeting | 选目标、取消 | 操作卡牌堆 | 使用 targeted 道具 | 目标合法提交 / 取消 | 目标失效（如敌人已死）→ 提示并回到 PlayerTurn |
 | EventChoice | 选事件选项、确认支付 | 操作卡牌堆 | 事件卡触发弹窗（evt_campfire 二选一、evt_shrine 献祭、evt_merchant 购买等；局内无货架商店，16_Shop.md §1） | 选项校验通过并入队 / 关闭弹窗 | 支付失败（金币/食物不足）→ 错误码提示，留在弹窗 |
@@ -43,6 +43,7 @@ Boot → Loading → MainMenu → LevelSelect → LevelInit
 8. 启动阶段（Boot/Loading）的阶段划分、并行任务与超时降级以 04_Platform/03_Packaging.md 第 4 节为权威，本表只定义状态语义。
 9. **重开本关（修复断点死局）**：主界面在"继续冒险"（有断点）态提供"重开本关"次级入口——经 ConfirmPopup 二次确认后**丢弃当前断点快照**，对同一关执行 LevelInit 重新生成（固定关用原 generationSeed；随机关生成**新种子**，旧进度作废）。该转移复用 MainMenu → LevelInit 直达路径，不新增状态。
 10. **局内手动退出**：PlayerTurn / ItemTargeting / EventChoice 态可经系统入口"保存并退出"→ 写断点快照 → 转移 MainMenu（与杀进程/切后台的自动断点同路径，11_Testing.md 用例 16）；Resolving 态入口排队至队列清空后生效，不允许在结算中途转移。
+11. **云端同步插入点**（2026-11-18）：Boot/Loading 期间发起一次 `ICloudSyncService.pull()`，与 03_Packaging.md §4 的 T0～T6 并行，**超时 3s 降级放行**；若判定冲突，Loading 完成后先弹 `POPUP_SYNC_CONFLICT`，选择后才进入 MainMenu；同步失败不阻断本地流程（10_CodingStandards.md §4.2）。
 
 ## 4. 与总规格书的对应
 
